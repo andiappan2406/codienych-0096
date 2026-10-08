@@ -47,7 +47,18 @@ export default function SetupPage() {
   };
 
   useEffect(() => {
-    checkDbStatus();
+    let mounted = true;
+    const initFetch = async () => {
+      try {
+        const res = await fetch("/api/db/status");
+        const data = await res.json();
+        if (mounted) setDbStatus(data.status);
+      } catch (e: any) {
+        if (mounted) setDbStatus({ connected: false, provider: "In-Memory Fallback", error: e.message });
+      }
+    };
+    initFetch();
+    return () => { mounted = false; };
   }, []);
 
   const handleNext = () => {
