@@ -1,9 +1,35 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { ArrowRight, AlertTriangle, AlertCircle, CheckCircle, Search, Filter } from "lucide-react";
+import { DEFAULT_ASSETS, AssetData } from "@/data/mockAssets";
 
 export default function AssetsPage() {
+  const [assets, setAssets] = useState<AssetData[]>(DEFAULT_ASSETS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost:8000/api/assets")
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data?.assets) && data.assets.length > 0) {
+          setAssets(data.assets);
+        } else {
+          setAssets(DEFAULT_ASSETS);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.warn("Backend unavailable or returned error, using fallback assets:", err);
+        setAssets(DEFAULT_ASSETS);
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="flex flex-col gap-8 pb-12">
       <div className="flex justify-between items-end">
@@ -26,66 +52,41 @@ export default function AssetsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AssetCard 
-          id="HVAC-04" 
-          type="HVAC System" 
-          health={48} 
-          risk={91} 
-          status="critical" 
-          lastService="42 days ago" 
-          nextService="ASAP (48h window)" 
-          imageUrl="/assets/equip-0-1.jpg"
-        />
-        <AssetCard 
-          id="PUMP-02" 
-          type="Industrial Water Pump" 
-          health={67} 
-          risk={61} 
-          status="warning" 
-          lastService="14 days ago" 
-          nextService="Within 7 days" 
-          imageUrl="/assets/equip-0-0.jpg"
-        />
-        <AssetCard 
-          id="ELEV-01" 
-          type="Passenger Elevator" 
-          health={91} 
-          risk={12} 
-          status="healthy" 
-          lastService="5 days ago" 
-          nextService="90 days" 
-          imageUrl="/assets/equip-0-2.jpg"
-        />
-        <AssetCard 
-          id="GEN-02" 
-          type="Backup Generator" 
-          health={94} 
-          risk={7} 
-          status="healthy" 
-          lastService="120 days ago" 
-          nextService="60 days" 
-          imageUrl="/assets/equip-1-0.jpg"
-        />
-        <AssetCard 
-          id="CHIL-01" 
-          type="Industrial Chiller" 
-          health={88} 
-          risk={15} 
-          status="healthy" 
-          lastService="210 days ago" 
-          nextService="150 days" 
-          imageUrl="/assets/equip-1-1.jpg"
-        />
-      </div>
+      {loading ? (
+        <div className="text-center py-20 text-foreground/50 animate-pulse">Running Neuro-Symbolic AI models...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {assets.map((asset, idx) => {
+            const status = asset.health.state === 'Critical' ? 'critical' : asset.health.state === 'Normal' ? 'healthy' : 'warning';
+            let nextService = '90 days';
+            if (status === 'critical') nextService = 'ASAP (48h window)';
+            if (status === 'warning') nextService = `Within ${asset.predictions.rul_days} days`;
+
+            return (
+              <AssetCard 
+                key={idx}
+                id={asset.id} 
+                type={asset.type_label} 
+                health={asset.health.score} 
+                risk={asset.predictions.failure_probability} 
+                status={status} 
+                lastService={asset.last_service} 
+                nextService={nextService} 
+                imageUrl={asset.image}
+                rootCause={asset.neurosymbolic?.root_cause}
+              />
+            )
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
 function AssetCard({ 
-  id, type, health, risk, status, lastService, nextService, imageUrl 
+  id, type, health, risk, status, lastService, nextService, imageUrl, rootCause 
 }: { 
-  id: string, type: string, health: number, risk: number, status: 'healthy' | 'warning' | 'critical', lastService: string, nextService: string, imageUrl: string 
+  id: string, type: string, health: number, risk: number, status: 'healthy' | 'warning' | 'critical', lastService: string, nextService: string, imageUrl: string, rootCause?: string 
 }) {
   const statusColors = {
     healthy: 'text-healthy bg-healthy/10 border-healthy/20',
@@ -126,7 +127,7 @@ function AssetCard({
           <p className="text-foreground/70 text-sm drop-shadow-md">{type}</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="bg-panel/80 p-3 rounded border border-panel-border backdrop-blur-md">
             <div className="text-xs text-foreground/50 mb-1">Health</div>
             <div className="text-lg font-mono">{health}/100</div>
@@ -137,7 +138,14 @@ function AssetCard({
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 text-sm text-foreground/70 mb-8 flex-1">
+        {status !== 'healthy' && rootCause && (
+           <div className="mb-4 bg-warning/5 border border-warning/20 p-3 rounded text-sm">
+             <span className="text-warning font-semibold text-xs uppercase">AI DIAGNOSIS:</span>
+             <p className="mt-1 text-foreground/90">{rootCause}</p>
+           </div>
+        )}
+
+        <div className="flex flex-col gap-2 text-sm text-foreground/70 mb-6 flex-1">
           <div className="flex justify-between border-b border-panel-border pb-2">
             <span>Last Service</span>
             <span className="font-mono">{lastService}</span>

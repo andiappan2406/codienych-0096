@@ -21,7 +21,7 @@ export default function AnalyticsPage() {
         </div>
         <div className="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary text-xs font-mono rounded flex items-center gap-2">
           <Info className="w-4 h-4" />
-          Demo / Simulated Data
+          Simulated Data
         </div>
       </div>
 
@@ -62,10 +62,10 @@ export default function AnalyticsPage() {
               <Target className="w-4 h-4" /> Multi-Model Architecture
             </h3>
             <div className="flex flex-col gap-4">
-              <ModelRow name="Anomaly Engine" type="Autoencoder" status="Active" />
+              <ModelRow name="Anomaly Engine" type="Isolation Forest" status="Active" />
               <ModelRow name="Failure Predictor" type="XGBoost" status="Active" />
               <ModelRow name="Temporal Pattern" type="LSTM" status="Evaluating" />
-              <ModelRow name="Neuro-Symbolic" type="Rules + ML" status="Training" />
+              <ModelRow name="Neuro-Symbolic" type="Rules + ML" status="Active" />
             </div>
           </div>
 

@@ -7,6 +7,7 @@ import { PlayCircle, ArrowRight, AlertTriangle, CloudRain, Cpu, Activity, Zap, A
 export default function SimulationPage() {
   const [step, setStep] = useState(0);
   const [backendData, setBackendData] = useState<any>(null);
+  const [selectedAsset, setSelectedAsset] = useState<string>("PUMP");
 
   const fetchBackendData = async (currentStep: number) => {
     try {
@@ -15,7 +16,7 @@ export default function SimulationPage() {
       const res = await fetch("http://localhost:8000/api/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode, step: currentStep })
+        body: JSON.stringify({ asset_type: selectedAsset, mode, step: currentStep })
       });
       const data = await res.json();
       setBackendData(data);
@@ -48,9 +49,27 @@ export default function SimulationPage() {
           <h1 className="text-3xl font-semibold tracking-tight">Sensor Relationship & Data Flow</h1>
           <p className="text-foreground/60 mt-2">Controlled live simulation connected to local Python ML backend.</p>
         </div>
-        <button onClick={runSimulation} className="flex items-center gap-2 bg-primary text-black px-6 py-3 rounded-md font-medium hover:bg-primary/90 transition-colors">
-          <PlayCircle className="w-5 h-5" /> {step === 0 ? "Start Demo" : step > 0 && step < 10 ? "Running..." : "Restart"}
-        </button>
+        <div className="flex gap-4 items-center">
+          <select 
+            value={selectedAsset} 
+            onChange={(e) => {
+                setSelectedAsset(e.target.value);
+                setStep(0);
+                setBackendData(null);
+            }}
+            disabled={step > 0 && step < 10}
+            className="bg-panel border border-panel-border rounded-md px-3 py-2.5 text-sm focus:outline-none focus:border-primary/50"
+          >
+            <option value="PUMP">Water Pump</option>
+            <option value="HVAC">HVAC System</option>
+            <option value="ELEVATOR">Elevator</option>
+            <option value="GENERATOR">Generator</option>
+            <option value="CHILLER">Chiller</option>
+          </select>
+          <button onClick={runSimulation} className="flex items-center gap-2 bg-primary text-black px-6 py-3 rounded-md font-medium hover:bg-primary/90 transition-colors">
+            <PlayCircle className="w-5 h-5" /> {step === 0 ? "Start Testing" : step > 0 && step < 10 ? "Running..." : "Restart"}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -104,9 +123,9 @@ export default function SimulationPage() {
             <StepItem currentStep={step} index={4} title="Anomaly Detected" desc={`Isolation forest model flags high anomaly (Score: ${backendData?.predictions.anomaly_score || '...'}).`} />
             <StepItem currentStep={step} index={5} title="Failure Probability Escalates" desc={`Gradient Boosting Classifier: ${backendData?.predictions.failure_probability || '...'}% Risk.`} />
             <StepItem currentStep={step} index={6} title="Fuzzy Logic Evaluation" desc={`Mechanical degradation risk = ${backendData?.health.state || '...'}.`} />
-            <StepItem currentStep={step} index={7} title="Neuro-Symbolic Reasoning" desc="Pattern consistent with motor/bearing degradation or leak." />
+            <StepItem currentStep={step} index={7} title="Neuro-Symbolic Reasoning" desc={backendData?.neurosymbolic?.root_cause ? `Root Cause: ${backendData.neurosymbolic.root_cause} - ${backendData.neurosymbolic.reasoning[0]}` : "Analyzing symbolic rules..."} />
             <StepItem currentStep={step} index={8} title="RUL Calculation" desc={`Estimated remaining useful life: ${backendData?.predictions.rul_days || '...'} days.`} />
-            <StepItem currentStep={step} index={9} title="Maintenance Scheduled" desc={`Recommendation: Inspect within ${Math.max(1, Math.floor(backendData?.predictions.rul_days || 0))} days.`} />
+            <StepItem currentStep={step} index={9} title="Maintenance Scheduled" desc={backendData?.neurosymbolic?.recommended_action ? `Action: ${backendData.neurosymbolic.recommended_action} (within ${Math.max(1, Math.floor(backendData?.predictions.rul_days || 0))} days)` : "..."} />
             <StepItem currentStep={step} index={10} title="Work Order Created" desc="Sent for human approval." isFinal />
           </div>
         </div>

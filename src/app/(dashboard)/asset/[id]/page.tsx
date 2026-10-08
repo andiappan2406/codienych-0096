@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, BrainCircuit, Activity, AlertTriangle, ShieldAlert, Zap, Wrench } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from "recharts";
+import { DEFAULT_ASSETS, AssetData } from "@/data/mockAssets";
 
 const healthHistory = [
   { day: "-5d", health: 94 },
@@ -35,6 +36,37 @@ function AssetDetailContent() {
   const params = useParams();
   const id = (params.id as string)?.toUpperCase() || "ASSET";
 
+  const [assetData, setAssetData] = useState<AssetData>(() => {
+    return DEFAULT_ASSETS.find(a => a.id.toUpperCase() === id || a.asset_type.toUpperCase() === id) || DEFAULT_ASSETS[0];
+  });
+
+  useEffect(() => {
+    fetch("http://localhost:8000/api/assets")
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data?.assets)) {
+          const found = data.assets.find((a: any) => a.id.toUpperCase() === id || a.asset_type.toUpperCase() === id);
+          if (found) setAssetData(found);
+        }
+      })
+      .catch(() => {
+        // Fallback already initialized
+      });
+  }, [id]);
+
+  const healthState = assetData.health.state;
+  const rootCause = assetData.neurosymbolic.root_cause;
+  const failureProb = assetData.predictions.failure_probability;
+
+  const getStatusColor = () => {
+    if (healthState === "Critical") return "text-critical";
+    if (healthState === "Warning") return "text-warning";
+    return "text-healthy";
+  };
+
   return (
     <div className="flex flex-col gap-8 pb-12">
       {/* Header */}
@@ -44,7 +76,7 @@ function AssetDetailContent() {
         </Link>
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight">{id}</h1>
+            <h1 className="text-3xl font-semibold tracking-tight">{assetData.type_label} ({assetData.id})</h1>
             <p className="text-foreground/60 mt-1">Detailed AI analysis and health prediction.</p>
           </div>
           <button className="flex items-center gap-2 bg-primary text-black px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors">
@@ -55,9 +87,9 @@ function AssetDetailContent() {
 
       {/* Core Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
-        <MetricCard label="HEALTH" value="48" suffix="/ 100" />
-        <MetricCard label="FAILURE RISK" value="91" suffix="%" color="text-critical" />
-        <MetricCard label="RUL ESTIMATE" value="48-96" suffix="hours" />
+        <MetricCard label="HEALTH" value={`${assetData.health.score}`} suffix="/ 100" />
+        <MetricCard label="FAILURE RISK" value={`${assetData.predictions.failure_probability}`} suffix="%" color={healthState === 'Critical' ? "text-critical" : "text-warning"} />
+        <MetricCard label="RUL ESTIMATE" value={`${assetData.predictions.rul_days}`} suffix="days" />
         <MetricCard label="CONFIDENCE" value="94" suffix="%" color="text-primary" />
         <MetricCard label="DATA QUALITY" value="98" suffix="%" color="text-healthy" />
       </div>
@@ -114,9 +146,9 @@ function AssetDetailContent() {
           <div className="glass-panel p-6">
             <h3 className="text-sm font-mono text-foreground/60 uppercase mb-6">Fuzzy Logic Memberships</h3>
             <div className="flex flex-col gap-6">
-              <FuzzyMembership label="Temperature" value={53} unit="°C" states={["Normal", "Warm", "High", "Critical"]} percentage={85} color="text-critical border-critical bg-critical" />
-              <FuzzyMembership label="Vibration" value={4.5} unit="mm/s" states={["Stable", "Elevated", "High", "Severe"]} percentage={80} color="text-critical border-critical bg-critical" />
-              <FuzzyMembership label="Current" value={28} unit="A" states={["Normal", "Elevated", "High"]} percentage={90} color="text-warning border-warning bg-warning" />
+              <FuzzyMembership label="Temperature" value={assetData.sensors.temperature} unit="°C" states={["Normal", "Warm", "High", "Critical"]} percentage={Math.min(100, Math.max(0, (assetData.sensors.temperature / 100) * 100))} color="text-critical border-critical bg-critical" />
+              <FuzzyMembership label="Vibration" value={assetData.sensors.vibration} unit="mm/s" states={["Stable", "Elevated", "High", "Severe"]} percentage={Math.min(100, Math.max(0, (assetData.sensors.vibration / 10) * 100))} color="text-critical border-critical bg-critical" />
+              <FuzzyMembership label="Current" value={assetData.sensors.current} unit="A" states={["Normal", "Elevated", "High"]} percentage={Math.min(100, Math.max(0, (assetData.sensors.current / 50) * 100))} color="text-warning border-warning bg-warning" />
             </div>
           </div>
 
@@ -141,8 +173,8 @@ function AssetDetailContent() {
               <ReasoningStep text="Observed Sensor Deviation" />
               <ReasoningStep text="Vibration + Temp + Current" highlight />
               <ReasoningStep text="Neural Pattern Detected" />
-              <ReasoningStep text="Fuzzy Risk = HIGH" alert />
-              <ReasoningStep text="Symbolic Rules = CONSISTENT" />
+              <ReasoningStep text={`Fuzzy Risk = ${healthState.toUpperCase()}`} alert={healthState === "Critical"} highlight={healthState === "Warning"} />
+              <ReasoningStep text={`Rule: ${rootCause}`} />
               <ReasoningStep text="Historical Match = STRONG" />
               <div className="mt-2 p-2 bg-critical/10 border border-critical/30 rounded text-critical font-bold text-center flex justify-between items-center px-4">
                 <span>FINAL RISK</span>
@@ -155,10 +187,10 @@ function AssetDetailContent() {
             <div>
               <h3 className="text-sm font-mono text-foreground/60 uppercase mb-3">Multi-Model Agreement</h3>
               <div className="flex flex-col gap-2 text-xs font-medium">
-                <div className="flex justify-between"><span className="text-foreground/70">Anomaly Model</span><span className="text-critical">HIGH</span></div>
-                <div className="flex justify-between"><span className="text-foreground/70">Failure Model</span><span className="text-critical font-mono">91%</span></div>
-                <div className="flex justify-between"><span className="text-foreground/70">Temporal Model</span><span className="text-warning font-mono">87%</span></div>
-                <div className="flex justify-between"><span className="text-foreground/70">Fuzzy Risk</span><span className="text-critical">HIGH</span></div>
+                <div className="flex justify-between"><span className="text-foreground/70">Anomaly Model</span><span className={getStatusColor()}>{healthState.toUpperCase()}</span></div>
+                <div className="flex justify-between"><span className="text-foreground/70">Failure Model</span><span className={getStatusColor() + " font-mono"}>{failureProb}%</span></div>
+                <div className="flex justify-between"><span className="text-foreground/70">Temporal Model</span><span className="text-warning font-mono">{Math.max(0, failureProb - 10)}%</span></div>
+                <div className="flex justify-between"><span className="text-foreground/70">Fuzzy Risk</span><span className={getStatusColor()}>{healthState.toUpperCase()}</span></div>
                 <div className="flex justify-between"><span className="text-foreground/70">Sensor Quality</span><span className="text-healthy font-mono">98%</span></div>
               </div>
             </div>
@@ -168,7 +200,7 @@ function AssetDetailContent() {
             <div>
               <h3 className="text-sm font-mono text-foreground/60 uppercase mb-3">Possible Causes</h3>
               <div className="flex flex-col gap-2 text-xs">
-                <CauseRow cause="01 Bearing degradation" prob={71} />
+                <CauseRow cause={`01 ${rootCause}`} prob={71} />
                 <CauseRow cause="02 Motor overload" prob={16} />
                 <CauseRow cause="03 Cooling problem" prob={9} />
                 <CauseRow cause="04 Sensor issue" prob={4} />
