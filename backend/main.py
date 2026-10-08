@@ -5,6 +5,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sklearn.ensemble import IsolationForest, HistGradientBoostingClassifier, HistGradientBoostingRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 
 app = FastAPI(title="Building Doctor API")
 
@@ -20,26 +22,35 @@ app.add_middleware(
 # 1. Simulator & Models
 # -------------------------
 
-# Generate Synthetic Training Data
-def generate_training_data(n_samples=1000):
+def generate_training_data(n_samples=2000):
     np.random.seed(42)
-    # Normal data
-    n_normal = int(n_samples * 0.8)
-    vib_normal = np.random.normal(2.0, 0.2, n_normal)
-    temp_normal = np.random.normal(45.0, 2.0, n_normal)
-    curr_normal = np.random.normal(15.0, 1.0, n_normal)
-    press_normal = np.random.normal(120.0, 5.0, n_normal)
+    # Normal data (75%)
+    n_normal = int(n_samples * 0.75)
+    
+    # Simulate a varying base load for the machine (e.g., pump speed/demand)
+    base_load = np.random.uniform(0.5, 1.0, n_normal)
+    
+    vib_normal = 2.0 * base_load + np.random.normal(0, 0.2, n_normal)
+    temp_normal = 40.0 + (10.0 * base_load) + np.random.normal(0, 1.5, n_normal)
+    curr_normal = 10.0 + (10.0 * base_load) + np.random.normal(0, 0.8, n_normal)
+    press_normal = 120.0 - (5.0 * base_load) + np.random.normal(0, 3.0, n_normal)
+    
     y_fail_normal = np.zeros(n_normal)
-    rul_normal = np.random.uniform(30, 60, n_normal)
+    rul_normal = np.random.uniform(40, 90, n_normal)
 
-    # Degraded data
+    # Degraded data (25%)
     n_degraded = n_samples - n_normal
-    vib_degraded = np.random.normal(5.5, 1.0, n_degraded)
-    temp_degraded = np.random.normal(60.0, 5.0, n_degraded)
-    curr_degraded = np.random.normal(25.0, 3.0, n_degraded)
-    press_degraded = np.random.normal(90.0, 10.0, n_degraded) # Pressure drops in a leak/degradation
+    degrade_factor = np.random.uniform(0.1, 1.0, n_degraded)
+    base_load_deg = np.random.uniform(0.5, 1.0, n_degraded)
+    
+    vib_degraded = (2.0 * base_load_deg) + (4.0 * degrade_factor) + np.random.normal(0, 0.5, n_degraded)
+    temp_degraded = (40.0 + (10.0 * base_load_deg)) + (15.0 * degrade_factor) + np.random.normal(0, 2.0, n_degraded)
+    curr_degraded = (10.0 + (10.0 * base_load_deg)) + (12.0 * degrade_factor) + np.random.normal(0, 1.5, n_degraded)
+    press_degraded = (120.0 - (5.0 * base_load_deg)) - (25.0 * degrade_factor) + np.random.normal(0, 4.0, n_degraded)
+    
     y_fail_degraded = np.ones(n_degraded)
-    rul_degraded = np.random.uniform(1, 15, n_degraded)
+    # RUL is inversely proportional to degradation
+    rul_degraded = 35 * (1 - degrade_factor) + np.random.uniform(0, 5, n_degraded)
 
     X = pd.DataFrame({
         'vibration': np.concatenate([vib_normal, vib_degraded]),
@@ -51,21 +62,34 @@ def generate_training_data(n_samples=1000):
     y_fail = np.concatenate([y_fail_normal, y_fail_degraded])
     y_rul = np.concatenate([rul_normal, rul_degraded])
     
-    return X, y_fail, y_rul
+    # Shuffle
+    indices = np.arange(n_samples)
+    np.random.shuffle(indices)
+    
+    return X.iloc[indices], y_fail[indices], y_rul[indices]
 
-print("Training ML Models...")
+print("Generating Data and Training ML Models...")
 X_train, y_fail_train, y_rul_train = generate_training_data()
 
-# Model 1: Isolation Forest (Anomaly Detection)
-iso_forest = IsolationForest(contamination=0.1, random_state=42)
+# Model 1: Isolation Forest (Anomaly Detection) with Scaling
+iso_forest = make_pipeline(
+    StandardScaler(),
+    IsolationForest(contamination=0.1, random_state=42)
+)
 iso_forest.fit(X_train)
 
 # Model 2: Classifier (Failure Risk)
-xgb_classifier = HistGradientBoostingClassifier(random_state=42)
+xgb_classifier = make_pipeline(
+    StandardScaler(),
+    HistGradientBoostingClassifier(random_state=42, l2_regularization=0.1)
+)
 xgb_classifier.fit(X_train, y_fail_train)
 
 # Model 3: Regressor (Remaining Useful Life in days)
-xgb_regressor = HistGradientBoostingRegressor(random_state=42)
+xgb_regressor = make_pipeline(
+    StandardScaler(),
+    HistGradientBoostingRegressor(random_state=42, l2_regularization=0.1)
+)
 xgb_regressor.fit(X_train, y_rul_train)
 print("Models trained successfully.")
 
@@ -73,35 +97,61 @@ print("Models trained successfully.")
 # 2. Fuzzy Logic Engine
 # -------------------------
 
-def calculate_fuzzy_health(anomaly_score, fail_prob, rul):
-    # Anomaly score from IsoForest is -1 (anomaly) or 1 (normal). Let's convert to 0-1 continuous if possible.
-    # We will use the decision_function which returns negative for anomaly, positive for normal
-    
-    # Fuzzy Rules (simplified for hackathon)
-    # Inputs: fail_prob (0-1), rul (days)
-    
-    # Base health on RUL mapping to 0-100
-    if rul > 30:
-        base_health = 100
-    elif rul < 0:
-        base_health = 0
-    else:
-        base_health = (rul / 30.0) * 100
+def fuzzy_membership(x, a, b, c, d):
+    """Trapezoidal membership function"""
+    if x <= a or x >= d: return 0.0
+    if a < x < b: return (x - a) / (b - a)
+    if b <= x <= c: return 1.0
+    if c < x < d: return (d - x) / (d - c)
+    return 0.0
 
-    # Penalize based on failure probability
-    health = base_health - (fail_prob * 30)
+def calculate_fuzzy_health(anomaly_score, fail_prob, rul):
+    # Anomaly score from IsoForest: < 0 is anomaly, > 0 is normal
     
+    # RUL memberships (Days)
+    rul_short = fuzzy_membership(rul, -10, 0, 7, 15)
+    rul_med = fuzzy_membership(rul, 10, 15, 25, 40)
+    rul_long = fuzzy_membership(rul, 30, 45, 100, 200)
+
+    # Fail Prob memberships (0-1)
+    fail_low = fuzzy_membership(fail_prob, -0.1, 0.0, 0.2, 0.4)
+    fail_med = fuzzy_membership(fail_prob, 0.2, 0.4, 0.6, 0.8)
+    fail_high = fuzzy_membership(fail_prob, 0.6, 0.8, 1.0, 1.1)
+    
+    # Anomaly membership (-1 to 1 mostly)
+    anomaly_high = fuzzy_membership(anomaly_score, -5.0, -1.0, -0.1, 0.0) # Negative score = anomaly
+
+    # Fuzzy Rules (Sugeno-style inference)
+    # Rule 1: High RUL + Low Fail Prob -> Excellent Health
+    w1 = min(rul_long, fail_low)
+    
+    # Rule 2: Medium RUL + Low/Med Fail Prob -> Good Health
+    w2 = min(rul_med, max(fail_low, fail_med))
+    
+    # Rule 3: Med RUL + Med Fail Prob or slight anomaly -> Fair Health
+    w3 = max(min(rul_med, fail_med), min(rul_med, anomaly_high))
+    
+    # Rule 4: Short RUL or High Fail Prob or High Anomaly -> Critical Health
+    w4 = max(rul_short, fail_high, anomaly_high)
+
+    total_weight = w1 + w2 + w3 + w4
+    if total_weight == 0:
+        health_score = 50 # Fallback
+    else:
+        # Centroids: Excellent=100, Good=80, Fair=50, Critical=15
+        health_score = (w1*100 + w2*80 + w3*50 + w4*15) / total_weight
+
     # Determine Fuzzy State
-    if health >= 80:
+    if health_score >= 85:
         state = "Normal"
-    elif health >= 50:
+    elif health_score >= 65:
         state = "Elevated"
-    elif health >= 25:
+    elif health_score >= 35:
         state = "High"
     else:
         state = "Critical"
         
-    return max(0, min(100, int(health))), state
+    return max(0, min(100, int(health_score))), state
 
 # -------------------------
 # 3. API Endpoints
@@ -113,19 +163,21 @@ class SimulationRequest(BaseModel):
 
 @app.post("/api/simulate")
 def simulate_pump(req: SimulationRequest):
-    # Generate sensor reading based on mode and step
+    # We will simulate a steady base load of 0.8
+    base_load = 0.8
+    
     if req.mode == 'normal':
-        vib = random.gauss(2.0, 0.1)
-        temp = random.gauss(45.0, 1.0)
-        curr = random.gauss(15.0, 0.5)
-        press = random.gauss(120.0, 1.0)
+        vib = 2.0 * base_load + random.gauss(0, 0.1)
+        temp = 40.0 + (10.0 * base_load) + random.gauss(0, 1.0)
+        curr = 10.0 + (10.0 * base_load) + random.gauss(0, 0.5)
+        press = 120.0 - (5.0 * base_load) + random.gauss(0, 1.0)
     else:
         # Progressively degrade based on step (0 to 10)
         degrade_factor = min(req.step / 10.0, 1.0)
-        vib = 2.0 + (3.5 * degrade_factor) + random.gauss(0, 0.2)
-        temp = 45.0 + (15.0 * degrade_factor) + random.gauss(0, 1.5)
-        curr = 15.0 + (10.0 * degrade_factor) + random.gauss(0, 1.0)
-        press = 120.0 - (30.0 * degrade_factor) + random.gauss(0, 2.0)
+        vib = (2.0 * base_load) + (4.0 * degrade_factor) + random.gauss(0, 0.2)
+        temp = (40.0 + (10.0 * base_load)) + (15.0 * degrade_factor) + random.gauss(0, 1.5)
+        curr = (10.0 + (10.0 * base_load)) + (12.0 * degrade_factor) + random.gauss(0, 1.0)
+        press = (120.0 - (5.0 * base_load)) - (25.0 * degrade_factor) + random.gauss(0, 2.0)
         
     # Prepare input
     X_live = pd.DataFrame({'vibration': [vib], 'temperature': [temp], 'current': [curr], 'pressure': [press]})

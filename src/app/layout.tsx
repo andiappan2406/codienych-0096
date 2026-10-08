@@ -25,12 +25,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${robotoMono.variable} font-sans min-h-screen flex flex-col`}
+        className={`${inter.variable} ${robotoMono.variable} font-sans min-h-screen flex flex-col relative`}
       >
-        <div className="flex-1 flex flex-col">
+        {/* Fixed Background Image to ensure it renders correctly */}
+        <div 
+          className="fixed inset-0 -z-50 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/theme-bg.jpg')" }}
+        />
+        {/* Gradient Overlay for readability */}
+        <div className="fixed inset-0 -z-40 bg-gradient-to-b from-[#141518]/60 to-[#141518]/85" />
+        
+        <div className="flex-1 flex flex-col z-0 relative">
           {children}
         </div>
-        <footer className="w-full border-t border-border/40 py-4 mt-auto">
+        <footer className="w-full border-t border-border/40 py-4 mt-auto relative z-0">
           <div className="max-w-7xl mx-auto px-6 text-center text-xs font-mono text-foreground/40">
             Draft by darkplasma
           </div>
