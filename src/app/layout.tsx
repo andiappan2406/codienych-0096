@@ -1,16 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const robotoMono = Roboto_Mono({
-  subsets: ["latin"],
-  variable: "--font-roboto-mono",
-});
 
 export const metadata: Metadata = {
   title: "BuildGuard AI | Predictive Maintenance",
@@ -25,7 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${robotoMono.variable} font-sans min-h-screen flex flex-col relative`}
+        className="font-sans min-h-screen flex flex-col relative"
       >
         {/* Fixed Background Image to ensure it renders correctly */}
         <div 

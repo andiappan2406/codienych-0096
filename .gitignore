@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+backend/**/__pycache__/
+backend/__pycache__/
+
+# temporary / lock files
+.~lock.*
