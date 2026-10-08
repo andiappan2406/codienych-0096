@@ -35,6 +35,7 @@ export default function AssetsPage() {
           status="critical" 
           lastService="42 days ago" 
           nextService="ASAP (48h window)" 
+          imageUrl="/assets/equip-0-1.jpg"
         />
         <AssetCard 
           id="PUMP-02" 
@@ -44,6 +45,7 @@ export default function AssetsPage() {
           status="warning" 
           lastService="14 days ago" 
           nextService="Within 7 days" 
+          imageUrl="/assets/equip-0-0.jpg"
         />
         <AssetCard 
           id="ELEV-01" 
@@ -53,6 +55,7 @@ export default function AssetsPage() {
           status="healthy" 
           lastService="5 days ago" 
           nextService="90 days" 
+          imageUrl="/assets/equip-0-2.jpg"
         />
         <AssetCard 
           id="GEN-02" 
@@ -62,15 +65,17 @@ export default function AssetsPage() {
           status="healthy" 
           lastService="120 days ago" 
           nextService="60 days" 
+          imageUrl="/assets/equip-1-0.jpg"
         />
         <AssetCard 
-          id="TRANS-01" 
-          type="Electrical Transformer" 
+          id="CHIL-01" 
+          type="Industrial Chiller" 
           health={88} 
           risk={15} 
           status="healthy" 
           lastService="210 days ago" 
           nextService="150 days" 
+          imageUrl="/assets/equip-1-1.jpg"
         />
       </div>
     </div>
@@ -78,9 +83,9 @@ export default function AssetsPage() {
 }
 
 function AssetCard({ 
-  id, type, health, risk, status, lastService, nextService 
+  id, type, health, risk, status, lastService, nextService, imageUrl 
 }: { 
-  id: string, type: string, health: number, risk: number, status: 'healthy' | 'warning' | 'critical', lastService: string, nextService: string 
+  id: string, type: string, health: number, risk: number, status: 'healthy' | 'warning' | 'critical', lastService: string, nextService: string, imageUrl: string 
 }) {
   const statusColors = {
     healthy: 'text-healthy bg-healthy/10 border-healthy/20',
@@ -97,35 +102,36 @@ function AssetCard({
   const Icon = status === 'healthy' ? CheckCircle : (status === 'warning' ? AlertTriangle : AlertCircle);
 
   return (
-    <div className="glass-panel overflow-hidden flex flex-col hover:border-primary/30 transition-colors group">
-      {/* Abstract Image Placeholder representing high-quality visuals */}
-      <div className="h-40 bg-border/50 relative overflow-hidden tech-grid flex items-center justify-center">
-        <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent z-10" />
-        <span className="font-mono text-4xl text-foreground/10 z-0">{id.split('-')[0]}</span>
+    <div className="glass-panel overflow-hidden flex flex-col hover:border-primary/50 transition-colors group">
+      <div 
+        className="h-48 relative overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: `url('${imageUrl}')` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent z-10" />
         
         <div className="absolute top-4 right-4 z-20">
-          <div className={`px-3 py-1 rounded-full border text-xs font-medium flex items-center gap-1.5 backdrop-blur-md ${statusColors[status]}`}>
-            <span className="relative flex h-1.5 w-1.5">
+          <div className={`px-3 py-1 rounded-full border text-xs font-medium flex items-center gap-1.5 backdrop-blur-md bg-panel ${statusColors[status]}`}>
+            <span className="relative flex h-2 w-2">
               {status !== 'healthy' && <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${statusColors[status].split(' ')[0].replace('text', 'bg')}`}></span>}
-              <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${statusColors[status].split(' ')[0].replace('text', 'bg')}`}></span>
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${statusColors[status].split(' ')[0].replace('text', 'bg')}`}></span>
             </span>
             {statusText[status]}
           </div>
         </div>
       </div>
 
-      <div className="p-6 flex-1 flex flex-col">
+      <div className="p-6 flex-1 flex flex-col relative z-20 -mt-8">
         <div className="mb-6">
-          <h3 className="text-xl font-semibold tracking-tight">{id}</h3>
-          <p className="text-foreground/50 text-sm">{type}</p>
+          <h3 className="text-xl font-semibold tracking-tight drop-shadow-md">{id}</h3>
+          <p className="text-foreground/70 text-sm drop-shadow-md">{type}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-panel/50 p-3 rounded border border-panel-border">
+          <div className="bg-panel/80 p-3 rounded border border-panel-border backdrop-blur-md">
             <div className="text-xs text-foreground/50 mb-1">Health</div>
             <div className="text-lg font-mono">{health}/100</div>
           </div>
-          <div className="bg-panel/50 p-3 rounded border border-panel-border">
+          <div className="bg-panel/80 p-3 rounded border border-panel-border backdrop-blur-md">
             <div className="text-xs text-foreground/50 mb-1">Failure Risk</div>
             <div className={`text-lg font-mono ${status === 'critical' ? 'text-critical' : status === 'warning' ? 'text-warning' : ''}`}>{risk}%</div>
           </div>

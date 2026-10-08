@@ -29,8 +29,8 @@ export default function RootLayout({
       >
         {/* Fixed Background Image to ensure it renders correctly */}
         <div 
-          className="fixed inset-0 -z-50 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/theme-bg.jpg')" }}
+          className="fixed inset-0 -z-50 bg-[#141518] bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/smart-building-bg.jpg')" }}
         />
         {/* Gradient Overlay for readability */}
         <div className="fixed inset-0 -z-40 bg-gradient-to-b from-[#141518]/60 to-[#141518]/85" />

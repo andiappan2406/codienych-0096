@@ -22,18 +22,57 @@ app.add_middleware(
 # 1. Simulator & Models
 # -------------------------
 
-def generate_training_data(n_samples=2000):
+def get_asset_params(asset_type, base_load):
+    if asset_type == 'PUMP':
+        return {
+            'vib_base': 2.0 * base_load, 'vib_noise': 0.2, 'vib_deg': 4.0,
+            'temp_base': 40.0 + 10.0 * base_load, 'temp_noise': 1.5, 'temp_deg': 15.0,
+            'curr_base': 10.0 + 10.0 * base_load, 'curr_noise': 0.8, 'curr_deg': 12.0,
+            'press_base': 120.0 - 5.0 * base_load, 'press_noise': 3.0, 'press_deg': -25.0,
+        }
+    elif asset_type == 'HVAC':
+        return {
+            'vib_base': 1.5 * base_load, 'vib_noise': 0.1, 'vib_deg': 3.0,
+            'temp_base': 22.0 + 5.0 * base_load, 'temp_noise': 1.0, 'temp_deg': 10.0,
+            'curr_base': 15.0 + 5.0 * base_load, 'curr_noise': 1.0, 'curr_deg': 8.0,
+            'press_base': 35.0 + 2.0 * base_load, 'press_noise': 1.5, 'press_deg': 15.0,
+        }
+    elif asset_type == 'ELEVATOR':
+        return {
+            'vib_base': 1.0 * base_load, 'vib_noise': 0.1, 'vib_deg': 2.5,
+            'temp_base': 30.0 + 5.0 * base_load, 'temp_noise': 1.0, 'temp_deg': 12.0,
+            'curr_base': 25.0 + 15.0 * base_load, 'curr_noise': 2.0, 'curr_deg': 20.0,
+            'press_base': 60.0 + 5.0 * base_load, 'press_noise': 2.0, 'press_deg': -10.0,
+        }
+    elif asset_type == 'GENERATOR':
+        return {
+            'vib_base': 3.0 * base_load, 'vib_noise': 0.3, 'vib_deg': 6.0,
+            'temp_base': 80.0 + 15.0 * base_load, 'temp_noise': 2.5, 'temp_deg': 30.0,
+            'curr_base': 50.0 + 20.0 * base_load, 'curr_noise': 3.0, 'curr_deg': 35.0,
+            'press_base': 45.0 + 10.0 * base_load, 'press_noise': 2.0, 'press_deg': 20.0,
+        }
+    elif asset_type == 'CHILLER':
+        return {
+            'vib_base': 1.2 * base_load, 'vib_noise': 0.1, 'vib_deg': 2.0,
+            'temp_base': 10.0 + 5.0 * base_load, 'temp_noise': 0.8, 'temp_deg': 18.0,
+            'curr_base': 40.0 + 10.0 * base_load, 'curr_noise': 2.0, 'curr_deg': 25.0,
+            'press_base': 80.0 + 10.0 * base_load, 'press_noise': 2.5, 'press_deg': -20.0,
+        }
+    else:
+        return get_asset_params('PUMP', base_load)
+
+def generate_training_data(asset_type, n_samples=2000):
     np.random.seed(42)
     # Normal data (75%)
     n_normal = int(n_samples * 0.75)
     
-    # Simulate a varying base load for the machine (e.g., pump speed/demand)
     base_load = np.random.uniform(0.5, 1.0, n_normal)
+    params = get_asset_params(asset_type, base_load)
     
-    vib_normal = 2.0 * base_load + np.random.normal(0, 0.2, n_normal)
-    temp_normal = 40.0 + (10.0 * base_load) + np.random.normal(0, 1.5, n_normal)
-    curr_normal = 10.0 + (10.0 * base_load) + np.random.normal(0, 0.8, n_normal)
-    press_normal = 120.0 - (5.0 * base_load) + np.random.normal(0, 3.0, n_normal)
+    vib_normal = params['vib_base'] + np.random.normal(0, params['vib_noise'], n_normal)
+    temp_normal = params['temp_base'] + np.random.normal(0, params['temp_noise'], n_normal)
+    curr_normal = params['curr_base'] + np.random.normal(0, params['curr_noise'], n_normal)
+    press_normal = params['press_base'] + np.random.normal(0, params['press_noise'], n_normal)
     
     y_fail_normal = np.zeros(n_normal)
     rul_normal = np.random.uniform(40, 90, n_normal)
@@ -42,11 +81,12 @@ def generate_training_data(n_samples=2000):
     n_degraded = n_samples - n_normal
     degrade_factor = np.random.uniform(0.1, 1.0, n_degraded)
     base_load_deg = np.random.uniform(0.5, 1.0, n_degraded)
+    params_deg = get_asset_params(asset_type, base_load_deg)
     
-    vib_degraded = (2.0 * base_load_deg) + (4.0 * degrade_factor) + np.random.normal(0, 0.5, n_degraded)
-    temp_degraded = (40.0 + (10.0 * base_load_deg)) + (15.0 * degrade_factor) + np.random.normal(0, 2.0, n_degraded)
-    curr_degraded = (10.0 + (10.0 * base_load_deg)) + (12.0 * degrade_factor) + np.random.normal(0, 1.5, n_degraded)
-    press_degraded = (120.0 - (5.0 * base_load_deg)) - (25.0 * degrade_factor) + np.random.normal(0, 4.0, n_degraded)
+    vib_degraded = params_deg['vib_base'] + (params_deg['vib_deg'] * degrade_factor) + np.random.normal(0, params_deg['vib_noise'], n_degraded)
+    temp_degraded = params_deg['temp_base'] + (params_deg['temp_deg'] * degrade_factor) + np.random.normal(0, params_deg['temp_noise'], n_degraded)
+    curr_degraded = params_deg['curr_base'] + (params_deg['curr_deg'] * degrade_factor) + np.random.normal(0, params_deg['curr_noise'], n_degraded)
+    press_degraded = params_deg['press_base'] + (params_deg['press_deg'] * degrade_factor) + np.random.normal(0, params_deg['press_noise'], n_degraded)
     
     y_fail_degraded = np.ones(n_degraded)
     # RUL is inversely proportional to degradation
@@ -68,29 +108,27 @@ def generate_training_data(n_samples=2000):
     
     return X.iloc[indices], y_fail[indices], y_rul[indices]
 
-print("Generating Data and Training ML Models...")
-X_train, y_fail_train, y_rul_train = generate_training_data()
+print("Generating Data and Training ML Models for all assets...")
+asset_types = ['PUMP', 'HVAC', 'ELEVATOR', 'GENERATOR', 'CHILLER']
+models = {}
 
-# Model 1: Isolation Forest (Anomaly Detection) with Scaling
-iso_forest = make_pipeline(
-    StandardScaler(),
-    IsolationForest(contamination=0.1, random_state=42)
-)
-iso_forest.fit(X_train)
-
-# Model 2: Classifier (Failure Risk)
-xgb_classifier = make_pipeline(
-    StandardScaler(),
-    HistGradientBoostingClassifier(random_state=42, l2_regularization=0.1)
-)
-xgb_classifier.fit(X_train, y_fail_train)
-
-# Model 3: Regressor (Remaining Useful Life in days)
-xgb_regressor = make_pipeline(
-    StandardScaler(),
-    HistGradientBoostingRegressor(random_state=42, l2_regularization=0.1)
-)
-xgb_regressor.fit(X_train, y_rul_train)
+for atype in asset_types:
+    X_train, y_fail_train, y_rul_train = generate_training_data(atype)
+    
+    iso_forest = make_pipeline(StandardScaler(), IsolationForest(contamination=0.1, random_state=42))
+    iso_forest.fit(X_train)
+    
+    xgb_classifier = make_pipeline(StandardScaler(), HistGradientBoostingClassifier(random_state=42, l2_regularization=0.1))
+    xgb_classifier.fit(X_train, y_fail_train)
+    
+    xgb_regressor = make_pipeline(StandardScaler(), HistGradientBoostingRegressor(random_state=42, l2_regularization=0.1))
+    xgb_regressor.fit(X_train, y_rul_train)
+    
+    models[atype] = {
+        'iso_forest': iso_forest,
+        'xgb_classifier': xgb_classifier,
+        'xgb_regressor': xgb_regressor
+    }
 print("Models trained successfully.")
 
 # -------------------------
@@ -158,29 +196,41 @@ def calculate_fuzzy_health(anomaly_score, fail_prob, rul):
 # -------------------------
 
 class SimulationRequest(BaseModel):
+    asset_type: str = "PUMP"
     mode: str # 'normal' or 'degrade'
     step: int = 0
 
 @app.post("/api/simulate")
-def simulate_pump(req: SimulationRequest):
+def simulate_asset(req: SimulationRequest):
     # We will simulate a steady base load of 0.8
     base_load = 0.8
+    atype = req.asset_type.upper()
+    if atype not in models:
+        atype = 'PUMP'
+        
+    # Get scalar values for base params (using a numpy array for vectorization in the function)
+    params = get_asset_params(atype, np.array([base_load]))
     
     if req.mode == 'normal':
-        vib = 2.0 * base_load + random.gauss(0, 0.1)
-        temp = 40.0 + (10.0 * base_load) + random.gauss(0, 1.0)
-        curr = 10.0 + (10.0 * base_load) + random.gauss(0, 0.5)
-        press = 120.0 - (5.0 * base_load) + random.gauss(0, 1.0)
+        vib = params['vib_base'][0] + random.gauss(0, params['vib_noise'])
+        temp = params['temp_base'][0] + random.gauss(0, params['temp_noise'])
+        curr = params['curr_base'][0] + random.gauss(0, params['curr_noise'])
+        press = params['press_base'][0] + random.gauss(0, params['press_noise'])
     else:
         # Progressively degrade based on step (0 to 10)
         degrade_factor = min(req.step / 10.0, 1.0)
-        vib = (2.0 * base_load) + (4.0 * degrade_factor) + random.gauss(0, 0.2)
-        temp = (40.0 + (10.0 * base_load)) + (15.0 * degrade_factor) + random.gauss(0, 1.5)
-        curr = (10.0 + (10.0 * base_load)) + (12.0 * degrade_factor) + random.gauss(0, 1.0)
-        press = (120.0 - (5.0 * base_load)) - (25.0 * degrade_factor) + random.gauss(0, 2.0)
+        vib = params['vib_base'][0] + (params['vib_deg'] * degrade_factor) + random.gauss(0, params['vib_noise'])
+        temp = params['temp_base'][0] + (params['temp_deg'] * degrade_factor) + random.gauss(0, params['temp_noise'])
+        curr = params['curr_base'][0] + (params['curr_deg'] * degrade_factor) + random.gauss(0, params['curr_noise'])
+        press = params['press_base'][0] + (params['press_deg'] * degrade_factor) + random.gauss(0, params['press_noise'])
         
     # Prepare input
     X_live = pd.DataFrame({'vibration': [vib], 'temperature': [temp], 'current': [curr], 'pressure': [press]})
+    
+    asset_models = models[atype]
+    iso_forest = asset_models['iso_forest']
+    xgb_classifier = asset_models['xgb_classifier']
+    xgb_regressor = asset_models['xgb_regressor']
     
     # Run Inference
     anomaly_raw = iso_forest.decision_function(X_live)[0]
@@ -193,6 +243,7 @@ def simulate_pump(req: SimulationRequest):
     health_score, fuzzy_state = calculate_fuzzy_health(anomaly_raw, fail_prob, rul_pred)
     
     return {
+        "asset_type": atype,
         "sensors": {
             "vibration": round(vib, 2),
             "temperature": round(temp, 1),

@@ -4,13 +4,13 @@
   --color-background: #141518;
   --color-foreground: #F5F5F7;
   --color-border: #30242B;
-  --color-panel: rgba(26, 27, 30, 0.7);
-  --color-panel-border: rgba(255, 46, 147, 0.15);
+  --color-panel: rgba(26, 27, 30, 0.75);
+  --color-panel-border: rgba(0, 229, 255, 0.2);
   
-  --color-primary: #FF2E93;
-  --color-warning: #FFB300;
-  --color-critical: #FF1744;
-  --color-healthy: #00E676;
+  --color-primary: #00E5FF; /* Bright Cyan / Mint */
+  --color-warning: #FFC400; /* Warm sunny yellow */
+  --color-critical: #FF4081; /* Strawberry accent */
+  --color-healthy: #00E676; /* Mint green */
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-mono: var(--font-roboto-mono), monospace;
@@ -18,7 +18,7 @@
 
 @layer base {
   body {
-    background-color: var(--color-background);
+    background-color: transparent;
     color: var(--color-foreground);
   }
 }
@@ -28,12 +28,12 @@
   border: 1px solid var(--color-panel-border);
   backdrop-filter: blur(12px);
   border-radius: 0.5rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 229, 255, 0.05); /* Slight cyan glow */
 }
 
 @utility tech-grid {
   background-size: 20px 20px;
   background-image:
-    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
 }
