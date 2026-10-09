@@ -16,13 +16,13 @@ export default function RootLayout({
       <body
         className="font-sans min-h-screen flex flex-col relative antialiased"
       >
-        {/* Fixed Background Image to ensure it renders correctly */}
+        {/* Fixed Background Image with Sunset Dusk Tone */}
         <div 
-          className="fixed inset-0 -z-50 bg-[#141518] bg-cover bg-center bg-no-repeat pointer-events-none"
+          className="fixed inset-0 -z-50 bg-[#151019] bg-cover bg-center bg-no-repeat pointer-events-none"
           style={{ backgroundImage: "url('/smart-building-bg.jpg')" }}
         />
-        {/* Gradient Overlay for readability */}
-        <div className="fixed inset-0 -z-40 bg-gradient-to-b from-[#141518]/50 via-[#141518]/70 to-[#141518]/85 pointer-events-none" />
+        {/* Gradient Overlay for warm sunset readability */}
+        <div className="fixed inset-0 -z-40 bg-gradient-to-b from-[#151019]/60 via-[#1b1420]/75 to-[#151019]/90 pointer-events-none" />
         
         <div className="flex-1 flex flex-col z-0 relative">
           {children}

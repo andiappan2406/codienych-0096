@@ -1,16 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #141518;
-  --color-foreground: #F5F5F7;
-  --color-border: #30242B;
-  --color-panel: rgba(26, 27, 30, 0.75);
-  --color-panel-border: rgba(0, 229, 255, 0.2);
+  --color-background: #151019;
+  --color-foreground: #FDF1EB;
+  --color-border: #42303C;
+  --color-panel: rgba(28, 20, 31, 0.84);
+  --color-panel-border: rgba(244, 139, 119, 0.25);
   
-  --color-primary: #00E5FF; /* Bright Cyan / Mint */
-  --color-warning: #FFC400; /* Warm sunny yellow */
-  --color-critical: #FF4081; /* Strawberry accent */
-  --color-healthy: #00E676; /* Mint green */
+  --color-primary: #F48B77; /* Coral Terracotta / Sunset Pink */
+  --color-secondary: #88B2C3; /* Aegean Sea Blue */
+  --color-mauve: #BE949C; /* Dusty Rose / Mauve */
+  --color-peach: #FDE2D2; /* Soft Sunset Peach */
+  --color-twilight: #6D5060; /* Deep Twilight Plum */
+
+  --color-warning: #F6AA68; /* Sunset Amber Glow */
+  --color-critical: #F05D5E; /* Sunset Vermilion */
+  --color-healthy: #7ECBA1; /* Coastal Seafoam Mint */
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-mono: var(--font-roboto-mono), monospace;
@@ -18,7 +23,7 @@
 
 @layer base {
   body {
-    background-color: transparent;
+    background-color: var(--color-background);
     color: var(--color-foreground);
   }
 }
@@ -26,16 +31,16 @@
 @utility glass-panel {
   background-color: var(--color-panel);
   border: 1px solid var(--color-panel-border);
-  backdrop-filter: blur(12px);
-  border-radius: 0.5rem;
-  box-shadow: 0 8px 32px rgba(0, 229, 255, 0.05); /* Slight cyan glow */
+  backdrop-filter: blur(14px);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 32px rgba(244, 139, 119, 0.08); /* Warm sunset glow */
 }
 
 @utility tech-grid {
-  background-size: 20px 20px;
+  background-size: 24px 24px;
   background-image:
-    linear-gradient(to right, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(244, 139, 119, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(136, 178, 195, 0.04) 1px, transparent 1px);
 }
 
 @media print {
