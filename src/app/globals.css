@@ -37,3 +37,20 @@
     linear-gradient(to right, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
 }
+
+@media print {
+  aside, header, nav, button {
+    display: none !important;
+  }
+  body, html {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  .glass-panel {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+  }
+}
+
