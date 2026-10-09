@@ -81,7 +81,7 @@ function NavContent({ onClose }: { onClose?: () => void }) {
                   onClick={onClose}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all ${
                     isActive
-                      ? "bg-primary/15 text-white shadow-sm border border-primary/30"
+                      ? "bg-[#1e2532] text-white shadow-sm border border-white/5"
                       : "text-foreground/60 hover:text-white hover:bg-white/5"
                   }`}
                 >
@@ -222,8 +222,8 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen flex text-foreground bg-background selection:bg-primary selection:text-black">
       {/* Desktop Sidebar (visible on lg screens) */}
-      <aside className="hidden lg:flex w-64 border-r border-panel-border/40 bg-[#16111a]/95 backdrop-blur-md flex-col flex-shrink-0 z-20 h-screen sticky top-0 overflow-hidden">
-        <Suspense fallback={<div className="w-64 h-screen bg-[#16111a]" />}>
+      <aside className="hidden lg:flex w-64 border-r border-panel-border/50 bg-[#12141a]/95 backdrop-blur-md flex-col flex-shrink-0 z-20 h-screen sticky top-0 overflow-hidden">
+        <Suspense fallback={<div className="w-64 h-screen bg-[#12141a]" />}>
           <NavContent />
         </Suspense>
       </aside>
@@ -234,7 +234,7 @@ export default function DashboardLayout({
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Sticky Header */}
-        <header className="h-16 flex items-center justify-between px-4 sm:px-8 border-b border-panel-border/40 bg-[#16111a]/85 backdrop-blur-md sticky top-0 z-30">
+        <header className="h-16 flex items-center justify-between px-4 sm:px-8 border-b border-panel-border/50 bg-[#12141a]/80 backdrop-blur-md sticky top-0 z-30">
           <div className="flex items-center gap-3">
             {/* Hamburger Button for Mobile */}
             <button
@@ -247,7 +247,7 @@ export default function DashboardLayout({
 
             <div className="flex items-center gap-2 text-base sm:text-lg font-medium text-white truncate">
               <PlusSquare className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="truncate font-semibold">City Hospital · Pump Room</span>
+              <span className="truncate">City Hospital · Pump Room</span>
             </div>
           </div>
 
@@ -263,8 +263,8 @@ export default function DashboardLayout({
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 sm:gap-2 bg-[#7ECBA1]/10 text-healthy px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold uppercase tracking-wider border border-healthy/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-healthy animate-pulse" />
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-[#1a2e26] text-[#4ade80] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold uppercase tracking-wider border border-[#4ade80]/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4ade80] animate-pulse" />
               <span className="hidden xs:inline">Live Mode</span>
               <span className="xs:hidden">Live</span>
             </div>
