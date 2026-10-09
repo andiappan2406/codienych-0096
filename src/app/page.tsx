@@ -67,6 +67,12 @@ export default function LandingPage() {
               <Layers className="w-4 h-4 text-primary" />
               Explore Architecture
             </Link>
+            <Link
+              href="/discover"
+              className="flex items-center justify-center gap-2 bg-panel border border-panel-border px-6 py-3.5 rounded-xl font-medium text-white hover:bg-white/5 transition-all"
+            >
+              Discover
+            </Link>
           </div>
 
           {/* Quick Metrics Badge for Mobile & Desktop */}

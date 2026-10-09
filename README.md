@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏢 BuildGuard AI — Predictive Maintenance Platform
 
-## Getting Started
+AI-driven building infrastructure health monitoring, predictive maintenance, and neuro-symbolic root-cause diagnostics.
 
-First, run the development server:
+---
 
+## 🚀 1-Minute Deployment (Free on Vercel via GitHub)
+
+### Step 1: Push your code to GitHub
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git add .
+git commit -m "Deploy BuildGuard AI"
+git push origin main
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Step 2: Deploy to Vercel (Free Hosting)
+1. Visit **[vercel.com](https://vercel.com)** and log in with your GitHub account.
+2. Click **"Add New Project"** and select `andiappan2406/codienych-0096`.
+3. Click **"Deploy"**. Vercel will automatically build and publish your app with free HTTPS and a `.vercel.app` URL.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🗄️ Connect a Free Online Database (Supabase or Neon)
 
-## Learn More
+BuildGuard includes an automated PostgreSQL adapter that auto-creates all schema tables and persists live telemetry.
 
-To learn more about Next.js, take a look at the following resources:
+### Option A: Free Supabase PostgreSQL (Recommended)
+1. Create a free account at **[supabase.com](https://supabase.com)**.
+2. Create a new project (select your region).
+3. Go to **Project Settings** → **Database** → **Connection String** → select **URI (Transaction Pooler)**.
+4. Copy the connection string (it looks like `postgresql://postgres.xxxx:your-password@aws-0-xx.pooler.supabase.com:6543/postgres?sslmode=require`).
+5. In your **Vercel Project Dashboard** (or `.env.local` locally):
+   - Add environment variable:
+     - `DATABASE_URL` = `your-supabase-connection-string`
+6. Open your deployed website, navigate to `/setup` → **Database tab**, and click **"Initialize & Seed Database"**. All tables and asset telemetry will be created automatically!
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Option B: Free Neon PostgreSQL
+1. Create a free database at **[neon.tech](https://neon.tech)**.
+2. Copy your connection URI.
+3. Set `DATABASE_URL` in Vercel environment variables.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 💻 Running Locally
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 1. Next.js Frontend & Serverless Engine
+```bash
+npm install
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 2. (Optional) Local Python Multi-Agent FastAPI Backend
+```bash
+cd backend
+./venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
