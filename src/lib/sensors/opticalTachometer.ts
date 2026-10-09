@@ -51,6 +51,10 @@ export class OpticalFanTachometer {
   ): Promise<boolean> {
     if (this.isActive) return true;
 
+    if (typeof window === "undefined" || !navigator?.mediaDevices?.getUserMedia) {
+      throw new Error("Camera access is not supported in this environment or requires a secure HTTPS connection.");
+    }
+
     try {
       this.videoElement = videoEl;
       this.canvasElement = document.createElement("canvas");
@@ -58,23 +62,103 @@ export class OpticalFanTachometer {
       this.canvasElement.height = 120;
       this.canvasCtx = this.canvasElement.getContext("2d", { willReadFrequently: true });
 
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: { ideal: preferredFacingMode },
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          frameRate: { ideal: 60, min: 30 },
+      // Progressive constraint fallback list
+      const constraintCandidates: MediaStreamConstraints[] = [
+        {
+          video: {
+            facingMode: { ideal: preferredFacingMode },
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+          },
+          audio: false,
         },
-      };
+        {
+          video: {
+            facingMode: preferredFacingMode,
+          },
+          audio: false,
+        },
+        {
+          video: {
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+          },
+          audio: false,
+        },
+        {
+          video: true,
+          audio: false,
+        },
+      ];
 
-      this.mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+      let stream: MediaStream | null = null;
+      let lastErr: unknown = null;
+
+      for (const constraints of constraintCandidates) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+          if (stream) break;
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+
+      if (!stream) {
+        throw lastErr || new Error("Unable to access camera. Please check camera permissions in your browser.");
+      }
+
+      this.mediaStream = stream;
+
+      // Configure video element attributes for iOS / Safari / Chrome autoplay
+      this.videoElement.muted = true;
+      this.videoElement.autoplay = true;
+      this.videoElement.playsInline = true;
+      this.videoElement.setAttribute("playsinline", "true");
+      this.videoElement.setAttribute("webkit-playsinline", "true");
+      this.videoElement.setAttribute("muted", "true");
       this.videoElement.srcObject = this.mediaStream;
-      await this.videoElement.play();
 
-      // Check for torch capability on rear camera
+      // Wait for video metadata to be ready before playing
+      await new Promise<void>((resolve) => {
+        if (!this.videoElement) {
+          resolve();
+          return;
+        }
+
+        const onReady = async () => {
+          try {
+            if (this.videoElement) {
+              await this.videoElement.play();
+            }
+          } catch (e) {
+            console.warn("Video playback warning:", e);
+          }
+          resolve();
+        };
+
+        if (this.videoElement.readyState >= 2 && this.videoElement.videoWidth > 0) {
+          onReady();
+        } else {
+          this.videoElement.onloadedmetadata = () => {
+            onReady();
+          };
+          // Fallback timer in case event is missed
+          setTimeout(() => {
+            onReady();
+          }, 800);
+        }
+      });
+
+      // Check for torch capability on mobile cameras
       const track = this.mediaStream.getVideoTracks()[0];
-      const capabilities = track.getCapabilities ? (track.getCapabilities() as unknown as { torch?: boolean }) : {};
-      this.hasTorch = Boolean(capabilities?.torch);
+      if (track) {
+        try {
+          const capabilities = (track.getCapabilities ? track.getCapabilities() : {}) as { torch?: boolean };
+          this.hasTorch = Boolean(capabilities?.torch);
+        } catch {
+          this.hasTorch = false;
+        }
+      }
 
       this.onDataCallback = onData;
       this.isActive = true;

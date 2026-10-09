@@ -62,6 +62,7 @@ export default function MobileSensorDoctorPage() {
   const [bladeCount, setBladeCount] = useState(4);
   const [strobeHz, setStrobeHz] = useState(30);
   const [isTorchOn, setIsTorchOn] = useState(false);
+  const [hasTorch, setHasTorch] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [savingStatus, setSavingStatus] = useState<string | null>(null);
 
@@ -298,18 +299,38 @@ export default function MobileSensorDoctorPage() {
       opticalTachometerRef.current?.stop();
       setIsOpticalRunning(false);
       setOpticalMetrics(null);
+      setHasTorch(false);
+      setIsTorchOn(false);
       setStatusMessage("Camera optical tachometer stopped.");
     } else {
-      if (!videoRef.current) return;
+      if (activeTab !== "optical") {
+        setActiveTab("optical");
+        // Allow React to mount the Optical tab's video element in DOM
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+
+      // Retry check to ensure videoRef.current is attached
+      let videoEl = videoRef.current;
+      for (let i = 0; i < 5 && !videoEl; i++) {
+        await new Promise((r) => setTimeout(r, 50));
+        videoEl = videoRef.current;
+      }
+
+      if (!videoEl) {
+        setStatusMessage("Video viewfinder element is not ready. Please try again.");
+        return;
+      }
+
       try {
         setStatusMessage("Starting camera video stream for optical RPM tracking...");
-        await opticalTachometerRef.current?.startCamera(videoRef.current, (metrics) => {
+        await opticalTachometerRef.current?.startCamera(videoEl, (metrics) => {
           setOpticalMetrics(metrics);
         });
+        setHasTorch(Boolean(opticalTachometerRef.current?.hasTorch));
         opticalTachometerRef.current?.setBladeCount(bladeCount);
         opticalTachometerRef.current?.setStrobeFrequency(strobeHz);
         setIsOpticalRunning(true);
-        setStatusMessage("Camera optical tachometer active. Point ROI at rotating blades.");
+        setStatusMessage("Camera optical tachometer active. Point viewfinder ROI at rotating fan / motor blades.");
       } catch (err: any) {
         setStatusMessage(`Camera access error: ${err.message || "Permission denied"}`);
       }
@@ -1176,7 +1197,7 @@ export default function MobileSensorDoctorPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {opticalTachometerRef.current?.hasTorch && (
+                  {hasTorch && (
                     <button
                       onClick={toggleTorch}
                       className={`p-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-colors ${
