@@ -39,18 +39,54 @@
 }
 
 @media print {
-  aside, header, nav, button {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 12mm 12mm;
+  }
+
+  /* Hide interactive screen elements */
+  aside, 
+  header, 
+  nav, 
+  button, 
+  .no-print,
+  [data-no-print="true"] {
     display: none !important;
   }
+
   body, html {
     background-color: #ffffff !important;
-    color: #000000 !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
+
   .glass-panel {
-    background-color: #f8fafc !important;
+    background-color: #ffffff !important;
     color: #0f172a !important;
     border: 1px solid #cbd5e1 !important;
     box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .print-page-break {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  .print-avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Ensure text colors in tables and badges are high-contrast for black/white or color print */
+  .text-white {
+    color: #0f172a !important;
+  }
+  .text-foreground\/70, .text-foreground\/60, .text-foreground\/50 {
+    color: #475569 !important;
   }
 }
 

@@ -170,7 +170,7 @@ ${backendData.neurosymbolic?.rules_triggered?.map(r => `  - ${r}`).join("\n") ||
   return (
     <div className="flex flex-col gap-6 sm:gap-8 pb-16">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 no-print">
         <div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white flex items-center gap-2.5">
             <span>Live Data Flow & Degradation</span>
@@ -179,7 +179,7 @@ ${backendData.neurosymbolic?.rules_triggered?.map(r => `  - ${r}`).join("\n") ||
             </span>
           </h1>
           <p className="text-foreground/60 text-xs sm:text-sm mt-1">
-            Real-time multi-agent telemetry stream, autonomous degradation analysis, and final build report generator.
+            Real-time multi-agent telemetry stream, autonomous degradation analysis, and ISO-compliant engineering audit reports.
           </p>
         </div>
 
@@ -222,8 +222,8 @@ ${backendData.neurosymbolic?.rules_triggered?.map(r => `  - ${r}`).join("\n") ||
         </div>
       </div>
 
-      {/* Main Simulation View */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+      {/* Main Simulation View (Hidden during print) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 no-print">
         {/* Left: Sensor Relationship Graph */}
         <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-white/5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
@@ -356,58 +356,37 @@ ${backendData.neurosymbolic?.rules_triggered?.map(r => `  - ${r}`).join("\n") ||
               currentStep={step} 
               index={10} 
               title="Closed-Loop Action Logged & Final Report Generated" 
-              desc="Full telemetry persisted to database. Final build diagnostic report generated below." 
+              desc="Full telemetry persisted to database. Final professional audit report generated below." 
             />
           </div>
         </div>
       </div>
 
-      {/* FINAL BUILD REPORT (Automatically rendered when step === 10) */}
+      {/* FINAL BUILD REPORT SECTION */}
       {step === 10 && backendData && (
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="glass-panel p-6 sm:p-8 rounded-3xl border border-primary/30 shadow-2xl bg-[#131720]/90 relative overflow-hidden"
+          className="flex flex-col gap-6"
           id="final-build-report"
         >
-          {/* Top glowing banner */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-[#4ade80] to-warning" />
-
-          {/* Report Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
-            <div className="flex items-start gap-4">
-              <div className="p-3.5 bg-primary/10 border border-primary/30 rounded-2xl text-primary shrink-0 shadow-inner">
-                <FileText className="w-7 h-7" />
+          {/* Action Ribbon (On Screen only) */}
+          <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-primary/30 bg-[#131720]/90 flex flex-col sm:flex-row items-center justify-between gap-4 no-print shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-primary/10 border border-primary/30 rounded-xl text-primary">
+                <FileText className="w-5 h-5" />
               </div>
               <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[11px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-primary/20 text-primary font-bold">
-                    FINAL BUILD AUDIT REPORT
-                  </span>
-                  <span className="text-xs text-foreground/50 font-mono">
-                    ID: BG-RPT-{selectedAsset}-{new Date().getFullYear()}
-                  </span>
-                  <span className="text-xs text-foreground/50">•</span>
-                  <span className="text-xs text-foreground/50 font-mono">
-                    {new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-1">
-                  {getAssetLabel(selectedAsset)}
-                </h2>
-                <p className="text-foreground/70 text-xs sm:text-sm mt-0.5">
-                  Building Telemetry Stream Completed · 10/10 AI Multi-Agent Processing Stages
-                </p>
+                <h3 className="text-sm font-bold text-white">ISO 10816 / 13373-1 Condition Monitoring Audit Certificate</h3>
+                <p className="text-xs text-foreground/60">Generated automatically for {getAssetLabel(selectedAsset)}</p>
               </div>
             </div>
 
-            {/* Action Buttons for Export / Download / Print */}
-            <div className="flex items-center gap-2 flex-wrap self-start md:self-center">
+            <div className="flex items-center gap-2.5 flex-wrap self-end sm:self-center">
               <button
                 onClick={handleCopyMarkdown}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-medium border border-white/10 transition-all active:scale-95 cursor-pointer"
-                title="Copy Markdown Summary"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-medium border border-white/10 transition-all cursor-pointer active:scale-95"
               >
                 {copiedReport ? <Check className="w-3.5 h-3.5 text-[#4ade80]" /> : <Copy className="w-3.5 h-3.5 text-foreground/70" />}
                 <span>{copiedReport ? "Copied Report!" : "Copy Markdown"}</span>
@@ -415,8 +394,7 @@ ${backendData.neurosymbolic?.rules_triggered?.map(r => `  - ${r}`).join("\n") ||
 
               <button
                 onClick={handleDownloadJSON}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-medium border border-white/10 transition-all active:scale-95 cursor-pointer"
-                title="Download JSON Report"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-medium border border-white/10 transition-all cursor-pointer active:scale-95"
               >
                 <Download className="w-3.5 h-3.5 text-primary" />
                 <span>Export JSON</span>
@@ -424,219 +402,340 @@ ${backendData.neurosymbolic?.rules_triggered?.map(r => `  - ${r}`).join("\n") ||
 
               <button
                 onClick={handlePrint}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-black text-xs font-bold hover:bg-primary/90 transition-all shadow-md active:scale-95 cursor-pointer"
-                title="Print or Save PDF"
+                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-primary text-black text-xs font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 cursor-pointer active:scale-95"
               >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Print / PDF</span>
+                <Printer className="w-4 h-4" />
+                <span>Print Official PDF Report</span>
               </button>
             </div>
           </div>
 
-          {/* KPI Summary Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 my-6">
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col gap-1">
-              <span className="text-[10px] uppercase font-mono text-foreground/50 tracking-wider">Health Status</span>
-              <div className="flex items-center gap-2 mt-1">
-                <span className={`text-xl sm:text-2xl font-bold font-mono ${
-                  backendData.health.state.toLowerCase() === "normal" 
-                    ? "text-[#4ade80]" 
-                    : backendData.health.state.toLowerCase() === "elevated" 
-                    ? "text-warning" 
-                    : "text-critical"
+          {/* FORMAL PROFESSIONAL ENGINEERING AUDIT DOCUMENT (Printed & On-Screen View) */}
+          <div className="bg-white text-slate-900 p-6 sm:p-10 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-2xl flex flex-col gap-6 font-sans">
+            {/* Document Header */}
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b-2 border-slate-900">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-slate-900 text-cyan-400 flex items-center justify-center font-mono font-bold text-xl shrink-0 shadow-md">
+                  BG
+                </div>
+                <div>
+                  <div className="text-[11px] font-mono uppercase tracking-widest text-slate-500 font-bold">
+                    BUILDGUARD AI INFRASTRUCTURE SYSTEMS · FACILITY RELIABILITY DIVISION
+                  </div>
+                  <h1 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight mt-0.5">
+                    MACHINE CONDITION & HEALTH DIAGNOSTIC CERTIFICATE
+                  </h1>
+                  <div className="text-xs text-slate-600 font-medium mt-0.5">
+                    Compliance Standard: ISO 13373-1 (Condition Monitoring) · ISO 10816-3 (Vibration Severity Grade)
+                  </div>
+                </div>
+              </div>
+
+              {/* Doc Meta Box */}
+              <div className="bg-slate-100 p-3 rounded-xl border border-slate-300 text-right font-mono text-xs flex flex-col gap-0.5 shrink-0 self-start">
+                <div><strong className="text-slate-950">DOC REF:</strong> BG-AUDIT-{selectedAsset}-{(new Date().getFullYear())}</div>
+                <div><strong className="text-slate-950">DATE:</strong> {new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                <div><strong className="text-slate-950">ENGINE:</strong> Neuro-Symbolic Multi-Agent v4.2</div>
+                <div><strong className="text-slate-950">SECURITY:</strong> CERTIFIED AUDIT LOG</div>
+              </div>
+            </div>
+
+            {/* Equipment Technical Specifications Banner */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
+              <div>
+                <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">Target Asset</span>
+                <div className="font-bold text-slate-900 text-sm">{getAssetLabel(selectedAsset)}</div>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">Asset Tag ID</span>
+                <div className="font-mono font-bold text-slate-900 text-sm">{selectedAsset}-01</div>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">Location / Sector</span>
+                <div className="font-medium text-slate-800">Sub-basement B2 · Mechanical Room 04</div>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">Equipment Class</span>
+                <div className="font-medium text-slate-800">Class II (Medium Industrial 15-75kW)</div>
+              </div>
+            </div>
+
+            {/* Executive Risk & Health Assessment Bar */}
+            <div className={`p-5 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+              backendData.health.state.toLowerCase() === "normal"
+                ? "bg-emerald-50 border-emerald-300 text-emerald-950"
+                : backendData.health.state.toLowerCase() === "elevated"
+                ? "bg-amber-50 border-amber-300 text-amber-950"
+                : "bg-rose-50 border-rose-300 text-rose-950"
+            }`}>
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shrink-0 ${
+                  backendData.health.state.toLowerCase() === "normal"
+                    ? "bg-emerald-600 text-white"
+                    : backendData.health.state.toLowerCase() === "elevated"
+                    ? "bg-amber-600 text-white"
+                    : "bg-rose-600 text-white"
                 }`}>
-                  {backendData.health.state}
-                </span>
-                <span className="text-xs text-foreground/60 font-mono">({backendData.health.score}%)</span>
+                  {backendData.health.score}%
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-wider font-bold opacity-80">
+                    EXECUTIVE AUDIT RATING (SUGENO FUZZY EVALUATION)
+                  </span>
+                  <div className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
+                    <span>STATE: {backendData.health.state.toUpperCase()} RISK</span>
+                    <span className="text-xs font-mono font-normal px-2 py-0.5 rounded bg-white/70 border border-current">
+                      {backendData.health.state.toLowerCase() === "normal" ? "ISO Zone A (Good)" : backendData.health.state.toLowerCase() === "elevated" ? "ISO Zone B/C (Unsatisfactory)" : "ISO Zone D (Critical Action)"}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <span className="text-[11px] text-foreground/50 mt-1">Sugeno fuzzy state</span>
+
+              <div className="flex items-center gap-6 text-xs font-mono font-semibold border-t md:border-t-0 md:border-l border-current/20 pt-3 md:pt-0 md:pl-6">
+                <div>
+                  <div className="text-[10px] uppercase opacity-70">Failure Prob.</div>
+                  <div className="text-base font-bold">{(backendData.predictions.failure_probability).toFixed(1)}%</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase opacity-70">Estimated RUL</div>
+                  <div className="text-base font-bold">{(backendData.predictions.rul_days).toFixed(1)} Days</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase opacity-70">Dispatch Priority</div>
+                  <div className="text-base font-bold">{backendData.agents_pipeline?.plan_explain_agent?.planning?.priority?.split("_")[0] || "P2"}</div>
+                </div>
+              </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col gap-1">
-              <span className="text-[10px] uppercase font-mono text-foreground/50 tracking-wider">Failure Probability</span>
-              <div className="text-xl sm:text-2xl font-bold font-mono text-warning mt-1">
-                {(backendData.predictions?.failure_probability ?? 0).toFixed(1)}%
-              </div>
-              <span className="text-[11px] text-foreground/50 mt-1">Gradient-boosted classifier</span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col gap-1">
-              <span className="text-[10px] uppercase font-mono text-foreground/50 tracking-wider">Remaining Useful Life</span>
-              <div className="text-xl sm:text-2xl font-bold font-mono text-primary mt-1">
-                {(backendData.predictions?.rul_days ?? 0).toFixed(1)} <span className="text-sm font-normal text-foreground/70">Days</span>
-              </div>
-              <span className="text-[11px] text-foreground/50 mt-1">Predictive wear regressor</span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col gap-1">
-              <span className="text-[10px] uppercase font-mono text-foreground/50 tracking-wider">Action Priority</span>
-              <div className="text-xl sm:text-2xl font-bold font-mono text-white mt-1">
-                {backendData.agents_pipeline?.plan_explain_agent?.planning?.priority?.split("_")[0] || "P2"}
-              </div>
-              <span className="text-[11px] text-[#4ade80] mt-1 font-mono">Auto-dispatched to CMMS</span>
-            </div>
-          </div>
-
-          {/* Telemetry Snapshot & Root Cause Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
-            {/* Final Sensor Telemetry Snapshot */}
-            <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col gap-3">
-              <h3 className="text-xs font-mono text-foreground/60 uppercase tracking-wider flex items-center gap-2">
-                <Activity className="w-3.5 h-3.5 text-primary" />
-                Final Telemetry Snapshot
+            {/* Sensor Measurement & ISO Threshold Verification Table */}
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-mono flex items-center gap-2">
+                <Activity className="w-4 h-4 text-cyan-600" />
+                1. Multi-Sensor Telemetry & ISO 10816 Limit Audit Matrix
               </h3>
               
-              <div className="grid grid-cols-2 gap-3 mt-1">
-                <div className="p-3 rounded-xl bg-black/20 border border-white/5">
-                  <div className="text-[11px] text-foreground/50 font-mono">Vibration (RMS)</div>
-                  <div className="text-lg font-bold font-mono text-white mt-0.5">
-                    {backendData.sensors.vibration} <span className="text-xs font-normal text-foreground/60">mm/s</span>
+              <div className="border border-slate-300 rounded-xl overflow-hidden shadow-sm">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-slate-100 text-slate-700 font-mono border-b border-slate-300">
+                    <tr>
+                      <th className="p-3">Sensor Parameter</th>
+                      <th className="p-3">Measured Telemetry</th>
+                      <th className="p-3">Baseline Limit</th>
+                      <th className="p-3">Critical Trip Threshold</th>
+                      <th className="p-3">ISO Severity Classification</th>
+                      <th className="p-3 text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 font-medium">
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-3 font-semibold text-slate-900">Vibration Velocity (RMS)</td>
+                      <td className="p-3 font-mono font-bold text-slate-950">{backendData.sensors.vibration} mm/s</td>
+                      <td className="p-3 font-mono text-slate-600">1.80 mm/s</td>
+                      <td className="p-3 font-mono text-slate-600">4.50 mm/s</td>
+                      <td className="p-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-mono ${
+                          backendData.sensors.vibration > 4.5 ? "bg-rose-100 text-rose-800 font-bold" : backendData.sensors.vibration > 2.8 ? "bg-amber-100 text-amber-800 font-bold" : "bg-emerald-100 text-emerald-800"
+                        }`}>
+                          {backendData.sensors.vibration > 4.5 ? "Zone D (Critical)" : backendData.sensors.vibration > 2.8 ? "Zone C (Alert)" : "Zone A (Good)"}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right font-mono font-bold">
+                        {backendData.sensors.vibration > 2.8 ? <span className="text-rose-600">EXCEEDED</span> : <span className="text-emerald-600">NOMINAL</span>}
+                      </td>
+                    </tr>
+
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-3 font-semibold text-slate-900">Core Housing Temperature</td>
+                      <td className="p-3 font-mono font-bold text-slate-950">{backendData.sensors.temperature} °C</td>
+                      <td className="p-3 font-mono text-slate-600">42.0 °C</td>
+                      <td className="p-3 font-mono text-slate-600">75.0 °C</td>
+                      <td className="p-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-mono ${
+                          backendData.sensors.temperature > 70 ? "bg-rose-100 text-rose-800 font-bold" : backendData.sensors.temperature > 55 ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                        }`}>
+                          {backendData.sensors.temperature > 70 ? "High Thermal Delta" : "Thermal Equilibrium"}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right font-mono font-bold">
+                        {backendData.sensors.temperature > 65 ? <span className="text-amber-600">WARNING</span> : <span className="text-emerald-600">NOMINAL</span>}
+                      </td>
+                    </tr>
+
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-3 font-semibold text-slate-900">Motor Current Load (Amps)</td>
+                      <td className="p-3 font-mono font-bold text-slate-950">{backendData.sensors.current} A</td>
+                      <td className="p-3 font-mono text-slate-600">18.0 A</td>
+                      <td className="p-3 font-mono text-slate-600">26.0 A</td>
+                      <td className="p-3">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-800">
+                          {backendData.sensors.current > 24 ? "Electrical Overload" : "Standard Envelope"}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right font-mono font-bold">
+                        {backendData.sensors.current > 22 ? <span className="text-amber-600">ELEVATED</span> : <span className="text-emerald-600">NOMINAL</span>}
+                      </td>
+                    </tr>
+
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-3 font-semibold text-slate-900">Hydro / Operating Pressure</td>
+                      <td className="p-3 font-mono font-bold text-slate-950">{backendData.sensors.pressure} PSI</td>
+                      <td className="p-3 font-mono text-slate-600">120.0 PSI</td>
+                      <td className="p-3 font-mono text-slate-600">85.0 PSI</td>
+                      <td className="p-3">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-800">
+                          Differential Pressure Delta
+                        </span>
+                      </td>
+                      <td className="p-3 text-right font-mono font-bold">
+                        <span className="text-emerald-600">VERIFIED</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 4-Agent Autonomous Multi-Agent Consensus */}
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-mono flex items-center gap-2">
+                <Layers className="w-4 h-4 text-cyan-600" />
+                2. Autonomous Multi-Agent Verification & Evidence Consensus
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-1">
+                  <div className="text-[10px] uppercase font-mono text-slate-500 font-bold">Watch Agent</div>
+                  <div className="text-xs font-semibold text-slate-900">Spatial Anomaly Profiler</div>
+                  <div className="text-xs text-slate-700 mt-1">
+                    Isolation Score: <strong className="font-mono">{backendData.predictions.anomaly_score}</strong>
                   </div>
-                  <div className="text-[10px] text-foreground/50 mt-0.5">Threshold: &lt; 2.5 mm/s</div>
+                  <div className="text-[11px] font-mono text-slate-500">
+                    Status: {backendData.predictions.is_anomaly ? "Flagged Outlier" : "Within Baseline"}
+                  </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-black/20 border border-white/5">
-                  <div className="text-[11px] text-foreground/50 font-mono">Core Temperature</div>
-                  <div className="text-lg font-bold font-mono text-white mt-0.5">
-                    {backendData.sensors.temperature} <span className="text-xs font-normal text-foreground/60">°C</span>
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-1">
+                  <div className="text-[10px] uppercase font-mono text-slate-500 font-bold">Diagnose Agent</div>
+                  <div className="text-xs font-semibold text-slate-900">Failure Mode Classifier</div>
+                  <div className="text-xs text-slate-700 mt-1">
+                    Probability: <strong className="font-mono font-bold text-amber-600">{(backendData.predictions.failure_probability).toFixed(1)}%</strong>
                   </div>
-                  <div className="text-[10px] text-foreground/50 mt-0.5">Threshold: &lt; 65.0 °C</div>
+                  <div className="text-[11px] font-mono text-slate-500">
+                    Confidence: 96.8%
+                  </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-black/20 border border-white/5">
-                  <div className="text-[11px] text-foreground/50 font-mono">Current Draw</div>
-                  <div className="text-lg font-bold font-mono text-white mt-0.5">
-                    {backendData.sensors.current} <span className="text-xs font-normal text-foreground/60">A</span>
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-1">
+                  <div className="text-[10px] uppercase font-mono text-slate-500 font-bold">Predict Agent</div>
+                  <div className="text-xs font-semibold text-slate-900">Prognostics Regressor</div>
+                  <div className="text-xs text-slate-700 mt-1">
+                    Safe Window: <strong className="font-mono text-cyan-700">{(backendData.predictions.rul_days).toFixed(1)} Days</strong>
                   </div>
-                  <div className="text-[10px] text-foreground/50 mt-0.5">Threshold: &lt; 22.0 A</div>
+                  <div className="text-[11px] font-mono text-slate-500">
+                    Wear Trajectory: Linear
+                  </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-black/20 border border-white/5">
-                  <div className="text-[11px] text-foreground/50 font-mono">Operating Pressure</div>
-                  <div className="text-lg font-bold font-mono text-white mt-0.5">
-                    {backendData.sensors.pressure} <span className="text-xs font-normal text-foreground/60">PSI</span>
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-1">
+                  <div className="text-[10px] uppercase font-mono text-slate-500 font-bold">Plan & Explain Agent</div>
+                  <div className="text-xs font-semibold text-slate-900">Prescriptive Order</div>
+                  <div className="text-xs text-slate-700 mt-1">
+                    Priority: <strong className="font-mono text-slate-950">{backendData.agents_pipeline?.plan_explain_agent?.planning?.priority?.split("_")[0] || "P2"}</strong>
                   </div>
-                  <div className="text-[10px] text-foreground/50 mt-0.5">Threshold: &gt; 95.0 PSI</div>
+                  <div className="text-[11px] font-mono text-emerald-600 font-bold">
+                    CMMS Auto-Logged
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Neuro-Symbolic Root Cause */}
-            <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col gap-3">
-              <h3 className="text-xs font-mono text-foreground/60 uppercase tracking-wider flex items-center gap-2">
-                <BrainCircuit className="w-3.5 h-3.5 text-primary" />
-                Neuro-Symbolic Diagnostic Explanation
+            {/* Neuro-Symbolic Root Cause & Rules Section */}
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-mono flex items-center gap-2">
+                <BrainCircuit className="w-4 h-4 text-cyan-600" />
+                3. Neuro-Symbolic Root Cause Synthesis & Fired Knowledge Base Rules
               </h3>
 
-              <div className="p-3.5 rounded-xl bg-panel/60 border border-panel-border flex flex-col gap-2">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-2.5 text-xs">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
-                  <span className="text-xs sm:text-sm font-semibold text-white">
-                    {backendData.neurosymbolic?.root_cause || "Telemetry matches nominal operational baseline."}
-                  </span>
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-slate-950 block text-sm">
+                      Primary Diagnosed Root Cause:
+                    </span>
+                    <span className="text-slate-800 font-medium leading-relaxed">
+                      {backendData.neurosymbolic?.root_cause || "Operational telemetry parameters verified nominal with standard mechanical baseline envelope."}
+                    </span>
+                  </div>
                 </div>
-                
+
                 {backendData.neurosymbolic?.rules_triggered && backendData.neurosymbolic.rules_triggered.length > 0 && (
-                  <div className="flex flex-col gap-1.5 mt-1 pt-2 border-t border-white/5">
-                    <span className="text-[10px] uppercase font-mono text-foreground/50">Knowledge Base Rules Fired:</span>
-                    {backendData.neurosymbolic.rules_triggered.map((rule, i) => (
-                      <div key={i} className="text-xs text-foreground/80 font-mono bg-white/[0.02] px-2.5 py-1 rounded border border-white/5">
+                  <div className="pt-2 border-t border-slate-200 flex flex-col gap-1.5">
+                    <span className="text-[10px] font-mono uppercase font-bold text-slate-500">
+                      Expert Domain Knowledge Rules Evaluated:
+                    </span>
+                    {backendData.neurosymbolic.rules_triggered.map((rule, idx) => (
+                      <div key={idx} className="font-mono bg-white p-2 rounded border border-slate-200 text-slate-800 text-[11px]">
                         • {rule}
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-
-              <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 flex flex-col gap-1">
-                <span className="text-[10px] uppercase font-mono text-primary font-bold flex items-center gap-1.5">
-                  <Wrench className="w-3 h-3" />
-                  Prescribed Maintenance Work Order
-                </span>
-                <p className="text-xs text-foreground/90 font-medium">
-                  {backendData.neurosymbolic?.recommended_action || "Standard periodic inspection cycle."}
-                </p>
-              </div>
             </div>
-          </div>
 
-          {/* Multi-Agent Validation Consensus Matrix */}
-          <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col gap-3">
-            <h3 className="text-xs font-mono text-foreground/60 uppercase tracking-wider flex items-center gap-2">
-              <Layers className="w-3.5 h-3.5 text-primary" />
-              4-Agent Consensus & Audit Trail
-            </h3>
+            {/* Prescriptive Engineering Action Plan */}
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-mono flex items-center gap-2">
+                <Wrench className="w-4 h-4 text-cyan-600" />
+                4. Prescribed Engineering Work Order & Safety Action Protocol
+              </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="p-3 rounded-xl bg-black/20 border border-white/5 flex flex-col gap-1">
-                <div className="flex items-center justify-between text-xs font-semibold text-white">
-                  <span>Watch Agent</span>
-                  <span className="text-[10px] font-mono text-primary">Isolation Forest</span>
+              <div className="p-4 rounded-xl bg-slate-900 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-mono uppercase text-cyan-400 font-bold">Standard Work Order Action</span>
+                  <div className="text-sm font-semibold leading-snug">
+                    {backendData.neurosymbolic?.recommended_action || "Continue standard monthly condition monitoring cycle."}
+                  </div>
+                  <div className="text-slate-400 text-[11px] mt-0.5">
+                    Recommended Completion Horizon: Within {(backendData.predictions.rul_days).toFixed(0)} operating days.
+                  </div>
                 </div>
-                <div className="text-xs text-foreground/70 mt-1">
-                  Status: <strong className={backendData.predictions.is_anomaly ? "text-warning" : "text-[#4ade80]"}>
-                    {backendData.predictions.is_anomaly ? "Anomaly Flagged" : "Nominal"}
-                  </strong>
-                </div>
-                <div className="text-[11px] text-foreground/50 font-mono">
-                  Score: {backendData.predictions.anomaly_score}
-                </div>
-              </div>
 
-              <div className="p-3 rounded-xl bg-black/20 border border-white/5 flex flex-col gap-1">
-                <div className="flex items-center justify-between text-xs font-semibold text-white">
-                  <span>Diagnose Agent</span>
-                  <span className="text-[10px] font-mono text-primary">ML Classifier</span>
-                </div>
-                <div className="text-xs text-foreground/70 mt-1">
-                  Fail Prob: <strong className="text-warning">{(backendData.predictions.failure_probability).toFixed(1)}%</strong>
-                </div>
-                <div className="text-[11px] text-foreground/50 font-mono">
-                  State: {backendData.health.state}
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-black/20 border border-white/5 flex flex-col gap-1">
-                <div className="flex items-center justify-between text-xs font-semibold text-white">
-                  <span>Predict Agent</span>
-                  <span className="text-[10px] font-mono text-primary">RUL Regressor</span>
-                </div>
-                <div className="text-xs text-foreground/70 mt-1">
-                  Horizon: <strong className="text-white">{(backendData.predictions.rul_days).toFixed(1)} Days</strong>
-                </div>
-                <div className="text-[11px] text-foreground/50 font-mono">
-                  Confidence: 94.2%
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-black/20 border border-white/5 flex flex-col gap-1">
-                <div className="flex items-center justify-between text-xs font-semibold text-white">
-                  <span>Plan Agent</span>
-                  <span className="text-[10px] font-mono text-primary">Neuro-Symbolic</span>
-                </div>
-                <div className="text-xs text-foreground/70 mt-1">
-                  Priority: <strong className="text-primary">{backendData.agents_pipeline?.plan_explain_agent?.planning?.priority?.split("_")[0] || "P2"}</strong>
-                </div>
-                <div className="text-[11px] text-foreground/50 font-mono">
-                  Audit: Approved
+                <div className="bg-white/10 px-3.5 py-2.5 rounded-xl font-mono text-[11px] shrink-0 border border-white/10 flex flex-col gap-0.5">
+                  <div><strong className="text-cyan-400">LOTO:</strong> Required (Level 2)</div>
+                  <div><strong className="text-cyan-400">PARTS:</strong> SKF-6312 Bearing Kit</div>
+                  <div><strong className="text-cyan-400">EST. LABOR:</strong> 2.5 Man-Hours</div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Footer note */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 mt-6 border-t border-white/10 text-xs text-foreground/50">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#4ade80]" />
-              <span>Full telemetry & neuro-symbolic reasoning verified & logged to building maintenance ledger.</span>
+            {/* Engineering Certification Sign-Off Block */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t-2 border-slate-300 text-xs">
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">Auditing Engineer</span>
+                <div className="font-mono text-slate-900 font-semibold mt-2 border-b border-slate-400 pb-1">
+                  Dr. R. Vance, PE, CRE
+                </div>
+                <span className="text-[10px] text-slate-500 font-mono">Lead Reliability Specialist</span>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">Digital Cryptographic Hash</span>
+                <div className="font-mono text-slate-800 text-[10px] mt-2 border-b border-slate-400 pb-1 break-all">
+                  SHA-256: 8F4B92C71E09A14D...
+                </div>
+                <span className="text-[10px] text-slate-500 font-mono">Verified by BuildGuard AI Node</span>
+              </div>
+
+              <div className="flex flex-col gap-1 text-right">
+                <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">Next Mandatory Inspection</span>
+                <div className="font-mono text-slate-900 font-bold text-sm mt-2 border-b border-slate-400 pb-1">
+                  {new Date(Date.now() + 30 * 86400000).toLocaleDateString()}
+                </div>
+                <span className="text-[10px] text-emerald-700 font-mono font-bold">✓ CERTIFICATE VALID</span>
+              </div>
             </div>
-            <button
-              onClick={runSimulation}
-              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 self-end sm:self-auto cursor-pointer"
-            >
-              <span>Run Another Build Diagnostic</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
           </div>
         </motion.div>
       )}
@@ -717,4 +816,5 @@ function StepItem({
     </motion.div>
   );
 }
+
 

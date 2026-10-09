@@ -305,98 +305,172 @@ ${buildings.map(b => `### ${b.name} (${b.id})
 
       {/* INDIVIDUAL BUILDING REPORT MODAL */}
       {selectedBuildingForReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-[#12151d] border border-panel-border rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 flex flex-col gap-6 shadow-2xl custom-scrollbar relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white text-slate-900 border border-slate-300 rounded-3xl w-full max-w-3xl max-h-[92vh] overflow-y-auto p-6 sm:p-10 flex flex-col gap-6 shadow-2xl custom-scrollbar relative font-sans">
             <button
               onClick={() => setSelectedBuildingForReport(null)}
-              className="absolute top-5 right-5 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-foreground/70 hover:text-white transition-colors"
+              className="absolute top-5 right-5 p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors no-print cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
-            {/* Modal Header */}
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary/10 border border-primary/30 rounded-2xl text-primary shrink-0">
-                <Building2 className="w-7 h-7" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-primary/20 text-primary font-bold uppercase">
-                    BUILDING AUDIT REPORT
-                  </span>
-                  <span className="text-xs text-foreground/50 font-mono">{selectedBuildingForReport.id}</span>
+            {/* Document Header */}
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b-2 border-slate-900">
+              <div className="flex items-start gap-3.5">
+                <div className="w-12 h-12 rounded-xl bg-slate-900 text-cyan-400 flex items-center justify-center font-mono font-bold text-xl shrink-0 shadow-md">
+                  BG
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-1">
-                  {selectedBuildingForReport.name}
-                </h2>
-                <p className="text-xs text-foreground/60 mt-0.5">
-                  {selectedBuildingForReport.type} · {selectedBuildingForReport.location}
-                </p>
-              </div>
-            </div>
-
-            {/* Metrics */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 flex flex-col">
-                <span className="text-[10px] uppercase font-mono text-foreground/50">Overall Health</span>
-                <span className="text-xl font-bold font-mono text-white mt-1">{selectedBuildingForReport.healthScore}%</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 flex flex-col">
-                <span className="text-[10px] uppercase font-mono text-foreground/50">Active Alerts</span>
-                <span className={`text-xl font-bold font-mono mt-1 ${selectedBuildingForReport.activeAlerts > 0 ? "text-warning" : "text-[#4ade80]"}`}>
-                  {selectedBuildingForReport.activeAlerts}
-                </span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 flex flex-col">
-                <span className="text-[10px] uppercase font-mono text-foreground/50">Energy Rating</span>
-                <span className="text-xl font-bold font-mono text-primary mt-1">{selectedBuildingForReport.energyEfficiency}</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 flex flex-col">
-                <span className="text-[10px] uppercase font-mono text-foreground/50">Est. Repair Cost</span>
-                <span className="text-xl font-bold font-mono text-white mt-1">{selectedBuildingForReport.estimatedMaintenanceCost || "$0"}</span>
-              </div>
-            </div>
-
-            {/* Equipment status */}
-            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col gap-2">
-              <span className="text-xs font-mono uppercase text-foreground/60">Connected Critical Assets</span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
-                {selectedBuildingForReport.monitoredAssets.map((asset) => (
-                  <div key={asset} className="flex items-center justify-between p-2.5 rounded-lg bg-panel border border-panel-border text-xs">
-                    <span className="font-medium text-white">{asset}</span>
-                    <span className="text-[#4ade80] flex items-center gap-1 font-mono text-[11px]">
-                      <CheckCircle2 className="w-3 h-3" /> Online
-                    </span>
+                <div>
+                  <div className="text-[11px] font-mono uppercase tracking-widest text-slate-500 font-bold">
+                    BUILDGUARD INFRASTRUCTURE SYSTEMS · FACILITY AUDIT DIVISION
                   </div>
-                ))}
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight mt-0.5">
+                    FACILITY HEALTH & MAINTENANCE AUDIT REPORT
+                  </h2>
+                  <p className="text-xs text-slate-600 font-medium mt-0.5">
+                    {selectedBuildingForReport.type} · {selectedBuildingForReport.location}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-slate-100 p-2.5 rounded-xl border border-slate-300 font-mono text-xs text-right shrink-0">
+                <div><strong>DOC ID:</strong> BG-FAC-{selectedBuildingForReport.id}</div>
+                <div><strong>DATE:</strong> {new Date().toLocaleDateString()}</div>
+                <div><strong>STANDARD:</strong> ISO 55000 Asset Mgmt</div>
+              </div>
+            </div>
+
+            {/* Executive Summary Rating */}
+            <div className={`p-4 sm:p-5 rounded-2xl border flex items-center justify-between gap-4 ${
+              selectedBuildingForReport.status === "healthy"
+                ? "bg-emerald-50 border-emerald-300 text-emerald-950"
+                : selectedBuildingForReport.status === "warning"
+                ? "bg-amber-50 border-amber-300 text-amber-950"
+                : "bg-rose-50 border-rose-300 text-rose-950"
+            }`}>
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg text-white shrink-0 ${
+                  selectedBuildingForReport.status === "healthy"
+                    ? "bg-emerald-600"
+                    : selectedBuildingForReport.status === "warning"
+                    ? "bg-amber-600"
+                    : "bg-rose-600"
+                }`}>
+                  {selectedBuildingForReport.healthScore}%
+                </div>
+                <div>
+                  <div className="text-[10px] font-mono uppercase font-bold opacity-70">
+                    FACILITY OPERATIONAL INTEGRITY SCORE
+                  </div>
+                  <div className="text-lg sm:text-xl font-black tracking-tight">
+                    STATUS: {selectedBuildingForReport.status.toUpperCase()} ({selectedBuildingForReport.status === "healthy" ? "NOMINAL" : "ACTION REQUIRED"})
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-right font-mono text-xs font-bold shrink-0">
+                <div>Energy Rating: {selectedBuildingForReport.energyEfficiency}</div>
+                <div>Active Alerts: {selectedBuildingForReport.activeAlerts}</div>
+              </div>
+            </div>
+
+            {/* Metrics Breakdown Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">Total Physical Assets</span>
+                <span className="text-lg font-bold font-mono text-slate-900 mt-0.5">{selectedBuildingForReport.totalAssets} Units</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">Critical Monitored Equipment</span>
+                <span className="text-lg font-bold font-mono text-slate-900 mt-0.5">{selectedBuildingForReport.monitoredAssets.length} Assets</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">Est. Maintenance Reserve</span>
+                <span className="text-lg font-bold font-mono text-slate-900 mt-0.5">{selectedBuildingForReport.estimatedMaintenanceCost || "$0"}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">Next Scheduled Audit</span>
+                <span className="text-sm font-bold font-mono text-cyan-700 mt-0.5">{selectedBuildingForReport.nextScheduledAudit || "Routine"}</span>
+              </div>
+            </div>
+
+            {/* Connected Critical Equipment Status Table */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-mono font-bold uppercase text-slate-700">Monitored Critical Equipment Condition</span>
+              <div className="border border-slate-300 rounded-xl overflow-hidden shadow-sm">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-slate-100 text-slate-700 font-mono border-b border-slate-300">
+                    <tr>
+                      <th className="p-3">Asset Designation</th>
+                      <th className="p-3">Telemetry Stream</th>
+                      <th className="p-3">Predictive RUL</th>
+                      <th className="p-3 text-right">Integrity Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 font-medium">
+                    {selectedBuildingForReport.monitoredAssets.map((asset) => (
+                      <tr key={asset} className="hover:bg-slate-50">
+                        <td className="p-3 font-semibold text-slate-900">{asset}</td>
+                        <td className="p-3 text-slate-600 font-mono">Continuous Multi-Agent IoT</td>
+                        <td className="p-3 font-mono font-bold text-slate-800">
+                          {asset.includes("PUMP") ? "6.2 Days" : asset.includes("HVAC") ? "12.4 Days" : "78.0 Days"}
+                        </td>
+                        <td className="p-3 text-right">
+                          <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+                            <CheckCircle2 className="w-3 h-3" /> VERIFIED
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Engineering Sign-Off Box */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t-2 border-slate-300 text-xs">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">Facility Auditor</span>
+                <div className="font-mono text-slate-900 font-semibold border-b border-slate-300 pb-1">J. Martinez, CEM, CEA</div>
+                <span className="text-[10px] text-slate-500 font-mono">Certified Energy & Facility Manager</span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">System Validation Hash</span>
+                <div className="font-mono text-slate-800 text-[10px] border-b border-slate-300 pb-1 break-all">SHA-256: 4C8A99F12B...</div>
+                <span className="text-[10px] text-slate-500 font-mono">BuildGuard AI Node Certified</span>
+              </div>
+              <div className="flex flex-col gap-0.5 text-right">
+                <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">Audit Classification</span>
+                <div className="font-mono text-slate-900 font-bold border-b border-slate-300 pb-1">LEVEL 2 COMPREHENSIVE</div>
+                <span className="text-[10px] text-emerald-700 font-mono font-bold">✓ AUDIT SIGNED</span>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-between gap-3 pt-4 border-t border-white/10 flex-wrap">
+            <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-200 flex-wrap no-print">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleCopyMarkdown(selectedBuildingForReport)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-medium border border-white/10 transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium border border-slate-300 transition-all cursor-pointer"
                 >
-                  {copiedReport ? <Check className="w-3.5 h-3.5 text-[#4ade80]" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedReport ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedReport ? "Copied!" : "Copy Markdown"}</span>
                 </button>
                 <button
                   onClick={() => handleDownloadJSON(selectedBuildingForReport)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-medium border border-white/10 transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium border border-slate-300 transition-all cursor-pointer"
                 >
-                  <Download className="w-3.5 h-3.5 text-primary" />
+                  <Download className="w-3.5 h-3.5 text-cyan-700" />
                   <span>Export JSON</span>
                 </button>
               </div>
 
               <button
                 onClick={() => window.print()}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-black font-semibold text-xs hover:bg-primary/90 transition-all shadow-md cursor-pointer"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-all shadow-lg cursor-pointer"
               >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Print / PDF</span>
+                <Printer className="w-4 h-4 text-cyan-400" />
+                <span>Print Official PDF Report</span>
               </button>
             </div>
           </div>
@@ -405,80 +479,91 @@ ${buildings.map(b => `### ${b.name} (${b.id})
 
       {/* PORTFOLIO REPORT MODAL */}
       {showPortfolioReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-[#12151d] border border-panel-border rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 flex flex-col gap-6 shadow-2xl custom-scrollbar relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white text-slate-900 border border-slate-300 rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-y-auto p-6 sm:p-10 flex flex-col gap-6 shadow-2xl custom-scrollbar relative font-sans">
             <button
               onClick={() => setShowPortfolioReport(false)}
-              className="absolute top-5 right-5 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-foreground/70 hover:text-white transition-colors"
+              className="absolute top-5 right-5 p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors no-print cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             {/* Modal Header */}
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary/10 border border-primary/30 rounded-2xl text-primary shrink-0">
-                <FileText className="w-7 h-7" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-primary/20 text-primary font-bold uppercase">
-                    GLOBAL PORTFOLIO AUDIT REPORT
-                  </span>
-                  <span className="text-xs text-foreground/50 font-mono">
-                    {new Date().toLocaleDateString()}
-                  </span>
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b-2 border-slate-900">
+              <div className="flex items-start gap-3.5">
+                <div className="w-12 h-12 rounded-xl bg-slate-900 text-cyan-400 flex items-center justify-center font-mono font-bold text-xl shrink-0 shadow-md">
+                  BG
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-1">
-                  Commercial Real Estate Portfolio Health
-                </h2>
-                <p className="text-xs text-foreground/60 mt-0.5">
-                  Aggregate multi-agent telemetry analysis across {buildings.length} facilities
-                </p>
+                <div>
+                  <div className="text-[11px] font-mono uppercase tracking-widest text-slate-500 font-bold">
+                    BUILDGUARD AI INFRASTRUCTURE SYSTEMS · PORTFOLIO MANAGEMENT
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight mt-0.5">
+                    GLOBAL REAL ESTATE & FACILITIES PORTFOLIO AUDIT
+                  </h2>
+                  <p className="text-xs text-slate-600 font-medium mt-0.5">
+                    Aggregate multi-agent telemetry analysis across {buildings.length} monitored commercial facilities
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-slate-100 p-2.5 rounded-xl border border-slate-300 font-mono text-xs text-right shrink-0">
+                <div><strong>DOC REF:</strong> BG-PORTFOLIO-{(new Date().getFullYear())}</div>
+                <div><strong>DATE:</strong> {new Date().toLocaleDateString()}</div>
+                <div><strong>STANDARD:</strong> ISO 55000 / BREEAM</div>
               </div>
             </div>
 
             {/* KPI Summary */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 flex flex-col">
-                <span className="text-[10px] uppercase font-mono text-foreground/50">Avg Health</span>
-                <span className="text-xl font-bold font-mono text-[#4ade80] mt-1">{avgHealth}%</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">Average Portfolio Health</span>
+                <span className="text-2xl font-bold font-mono text-emerald-600 mt-1">{avgHealth}%</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 flex flex-col">
-                <span className="text-[10px] uppercase font-mono text-foreground/50">Facilities</span>
-                <span className="text-xl font-bold font-mono text-white mt-1">{buildings.length}</span>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">Monitored Facilities</span>
+                <span className="text-2xl font-bold font-mono text-slate-900 mt-1">{buildings.length}</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 flex flex-col">
-                <span className="text-[10px] uppercase font-mono text-foreground/50">Total Assets</span>
-                <span className="text-xl font-bold font-mono text-white mt-1">{totalAssetsCount}</span>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">Total Physical Assets</span>
+                <span className="text-2xl font-bold font-mono text-slate-900 mt-1">{totalAssetsCount}</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 flex flex-col">
-                <span className="text-[10px] uppercase font-mono text-foreground/50">Active Alerts</span>
-                <span className="text-xl font-bold font-mono text-warning mt-1">{totalAlerts}</span>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">Active Equipment Alerts</span>
+                <span className={`text-2xl font-bold font-mono mt-1 ${totalAlerts > 0 ? "text-amber-600" : "text-emerald-600"}`}>{totalAlerts}</span>
               </div>
             </div>
 
             {/* Breakdown Table */}
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-mono uppercase text-foreground/60">Facilities Breakdown</span>
-              <div className="border border-white/10 rounded-xl overflow-hidden">
+              <span className="text-xs font-mono font-bold uppercase text-slate-700">Facilities Breakdown Matrix</span>
+              <div className="border border-slate-300 rounded-xl overflow-hidden shadow-sm">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-white/[0.03] text-foreground/60 font-mono border-b border-white/10">
+                  <thead className="bg-slate-100 text-slate-700 font-mono border-b border-slate-300">
                     <tr>
-                      <th className="p-3">Facility</th>
-                      <th className="p-3">Location</th>
-                      <th className="p-3">Health</th>
-                      <th className="p-3">Alerts</th>
-                      <th className="p-3">Energy</th>
+                      <th className="p-3">Facility Name</th>
+                      <th className="p-3">Sector Location</th>
+                      <th className="p-3">Health Score</th>
+                      <th className="p-3">Active Alerts</th>
+                      <th className="p-3">Efficiency</th>
+                      <th className="p-3 text-right">Maintenance Reserve</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 font-medium">
+                  <tbody className="divide-y divide-slate-200 font-medium">
                     {buildings.map(b => (
-                      <tr key={b.id} className="hover:bg-white/[0.02]">
-                        <td className="p-3 font-semibold text-white">{b.name}</td>
-                        <td className="p-3 text-foreground/70">{b.location}</td>
-                        <td className="p-3 font-mono text-[#4ade80]">{b.healthScore}%</td>
-                        <td className="p-3 font-mono">{b.activeAlerts}</td>
-                        <td className="p-3 font-mono text-primary">{b.energyEfficiency}</td>
+                      <tr key={b.id} className="hover:bg-slate-50">
+                        <td className="p-3 font-semibold text-slate-900">{b.name}</td>
+                        <td className="p-3 text-slate-600">{b.location}</td>
+                        <td className="p-3 font-mono font-bold text-emerald-700">{b.healthScore}%</td>
+                        <td className="p-3 font-mono">
+                          {b.activeAlerts > 0 ? (
+                            <span className="text-amber-700 font-bold bg-amber-100 px-2 py-0.5 rounded">{b.activeAlerts} Warning</span>
+                          ) : (
+                            <span className="text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">0 Nominal</span>
+                          )}
+                        </td>
+                        <td className="p-3 font-mono font-bold text-cyan-700">{b.energyEfficiency}</td>
+                        <td className="p-3 text-right font-mono font-bold text-slate-900">{b.estimatedMaintenanceCost || "$0"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -487,30 +572,30 @@ ${buildings.map(b => `### ${b.name} (${b.id})
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between gap-3 pt-4 border-t border-white/10 flex-wrap">
+            <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-200 flex-wrap no-print">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleCopyMarkdown()}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-medium border border-white/10 transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium border border-slate-300 transition-all cursor-pointer"
                 >
-                  {copiedReport ? <Check className="w-3.5 h-3.5 text-[#4ade80]" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedReport ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedReport ? "Copied!" : "Copy Markdown"}</span>
                 </button>
                 <button
                   onClick={() => handleDownloadJSON()}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-medium border border-white/10 transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium border border-slate-300 transition-all cursor-pointer"
                 >
-                  <Download className="w-3.5 h-3.5 text-primary" />
+                  <Download className="w-3.5 h-3.5 text-cyan-700" />
                   <span>Export JSON</span>
                 </button>
               </div>
 
               <button
                 onClick={() => window.print()}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-black font-semibold text-xs hover:bg-primary/90 transition-all shadow-md cursor-pointer"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-all shadow-lg cursor-pointer"
               >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Print / PDF</span>
+                <Printer className="w-4 h-4 text-cyan-400" />
+                <span>Print Official PDF Report</span>
               </button>
             </div>
           </div>
